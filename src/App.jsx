@@ -33,6 +33,7 @@ function filterBy(events, filter, date){
 }
 
 function App() {
+<<<<<<< HEAD
   const [count, setCount] = useState(0)
   const [view, setView] = useState("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -54,4 +55,42 @@ function App() {
   )
 }
 
+=======
+  // const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <div >
+        <MonthGrid day={2} />
+      </div>
+    </>
+  )
+}
+
+function MonthGrid(props) {
+  let day = props.day;
+  return (
+    //flex grow resizes cells by default if not fixed
+    <Box sx={{ flexGrow: 1}}> 
+      <Grid container spacing={0.5}>
+        {Array.from(Array(30)).map((_, index) => (
+          <MonthCell day={index + 1}/>
+        ))}
+      </Grid>
+    </Box>
+  );
+  function MonthCell(props){
+    let day = props.day;
+    return (
+      <Grid size={40}>
+        <Item>{day}</Item>
+      </Grid> 
+    );
+  }
+}
+
+>>>>>>> f19da3f (monthcell object creation)
 export default App
+
+// BrowserRouter
+// Route="/" = ..//././.
