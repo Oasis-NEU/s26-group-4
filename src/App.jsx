@@ -19,57 +19,40 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
       <div >
-        <BasicGrid />
+        <MonthGrid day={2} />
       </div>
     </>
   )
 }
 
-export function BasicGrid() {
+function MonthGrid(props) {
+  let day = props.day;
   return (
     //flex grow resizes cells by default if not fixed
-    <Box sx={{ flexGrow: 1 }}> 
-      <Grid container spacing={2}>
-        <Grid size={4}>
-          <Item>size=8 lakshdoiuas duihaiud hauishd iuauidhaiushd uiahiuhauishd uhauidhuia dsjai isabdia</Item>
-        </Grid>
-        <Grid size={4}>
-          <Item>size=4</Item>
-        </Grid>
-        <Grid size={4}>
-          <Item>size=4</Item>
-        </Grid>
-        <Grid size={4}>
-          <Item>size=8</Item>
-        </Grid>
+    <Box sx={{ flexGrow: 1}}> 
+      <Grid container spacing={0.5}>
+        {Array.from(Array(30)).map((_, index) => (
+          <MonthCell day={index + 1}/>
+        ))}
       </Grid>
     </Box>
   );
+  function MonthCell(props){
+    let day = props.day;
+    return (
+      <Grid size={40}>
+        <Item>{day}</Item>
+      </Grid> 
+    );
+  }
 }
 
 export default App
+
+// BrowserRouter
+// Route="/" = ..//././.
