@@ -35,7 +35,7 @@ function MonthGrid(props) {
   return (
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}> 
-      <Grid container spacing={0.5}>
+      <Grid container spacing={0.5} columns={7}>
         {Array.from(Array(30)).map((_, index) => (
           <MonthCell day={index + 1}/>
         ))}
@@ -45,7 +45,7 @@ function MonthGrid(props) {
   function MonthCell(props){
     let day = props.day;
     return (
-      <Grid size={40}>
+      <Grid size={1}>
         <Item>{day}</Item>
       </Grid> 
     );
