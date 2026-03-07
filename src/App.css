@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+.calendar {
+  background-color: rgba(67, 67, 67, 0.5);
+  padding: 10px;
+}
