@@ -126,11 +126,29 @@ function getEventsByHour(events, date, hourIndex) {
   // })
 }
 
-function EventAdder() {
+function EventAdder(props) {
+  const events = props.events;
+  const setEvents = props.setEvents;
   return (
-    <button className="eventAdder">
-      Add Event
-    </button>
+    <div className="eventAdder">
+      <form onClick={(e) => (
+          e.preventDefault()
+        )}>
+        <select name="Day">
+          {Array.from(Array(7)).map((_, index) => (
+            <option value={getDayName(index)}>{getDayName(index)}</option>
+          ))}
+        </select>
+        <select name="Starts">
+          {Array.from(Array(24)).map((_, index) => (
+            <option value={getHourName(index)}>{getHourName(index)}</option>
+          ))}
+        </select>
+        {/* <label for="eventName">Name:</label> */}
+        <input type="text" name="eventName"/>
+        <input type="submit" value="Add Event"/>
+      </form>
+    </div>
   )
 }
 
@@ -156,12 +174,12 @@ function WeekGrid(props) {
     return getDayByIndex(date, index) > 0 && getDayByIndex(date, index) <= getDaysInMonth(month);
   }
 
-  console.log("asdas");
-  console.log(getEventsByHour(events, new Date(2026, 2, 19), 12));
-  console.log(getEventsByHour(events, getDateByIndex(date, 4), 12));
-  console.log(getEventsByHour(events, getDateByIndex(date, 4), 12).map((event) => {
-                    return event.name;
-                  }));
+  // console.log("asdas");
+  // console.log(getEventsByHour(events, new Date(2026, 2, 19), 12));
+  // console.log(getEventsByHour(events, getDateByIndex(date, 4), 12));
+  // console.log(getEventsByHour(events, getDateByIndex(date, 4), 12).map((event) => {
+  //                   return event.name;
+  //                 }));
 
   return (
     <div>
@@ -198,7 +216,7 @@ function WeekGrid(props) {
           </tr>
         ))}
       </table>
-      <EventAdder/>
+      <EventAdder events={events} setEvents={setEvents}/>
     </div>
   )
 }
