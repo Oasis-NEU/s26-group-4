@@ -71,6 +71,13 @@ function MonthGrid(props) {
   const prevMonth = mod(currentMonth - 1, 12);
   const prevMonthDays = getDaysInMonth(prevMonth, leapYear);
 
+  function handleClick(day, active) {
+    return active ? () => {
+     alert(day);
+    }
+    : () => {};
+  }
+
   return (
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}>
@@ -84,8 +91,12 @@ function MonthGrid(props) {
       <Grid container spacing={0.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
           index >= currentMonthOffset
-          ? <MonthCell day={mod((index-currentMonthOffset), currentMonthDays) + 1}/>
-          : <MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}/>
+          ? <MonthCell day={mod((index-currentMonthOffset), currentMonthDays) + 1}
+            active={index-currentMonthOffset<currentMonthDays}
+            click={handleClick}/>
+          : <MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}
+            active={false}
+            click={handleClick}/>
         ))}
       </Grid>
     </Box>
@@ -94,11 +105,11 @@ function MonthGrid(props) {
 
 function MonthCell(props){
   let day = props.day;
+  let active = props.active;
+  let click = props.click;
   return (
     <Grid size={1}>
-      <Item onClick={() => {
-        alert('hello');
-      }}>{day}</Item>
+      <Item onClick={click(day, active)}>{day}</Item>
     </Grid>
   );
 }
