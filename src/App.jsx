@@ -87,6 +87,33 @@ function Calendar() {
   )
 }
 
+function hashDate(date) {
+  return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+}
+
+function getEventsByHour(events, date, hourIndex) {
+  let filtered = [];
+  // console.log(events["2026-3-19"]);
+  // filtered.push(events["2026-3-19"][0].name);
+  // return filtered;
+  let todayEvents = events[hashDate(date)];
+  if (todayEvents == null) {
+    // console.log(hashDate(date));
+    return [];
+  }
+  for (let i = 0; i < todayEvents.length; i++) {
+    if (todayEvents[i].startHourIndex == hourIndex) {
+      let copy = {};
+      Object.assign(copy, todayEvents[i]);
+      filtered.push(copy);
+    }
+  }
+  return filtered;
+  // return events[hashDate(date)].filter((event) => {
+  //   event.startHourIndex == hourIndex;
+  // })
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
@@ -97,6 +124,24 @@ function WeekGrid(props) {
   const day = date.getDate();
   const dayOfWeekIndex = getDayOfWeekIndex(date);
 
+  let events = {};
+  let testEvent = {
+    startHourIndex: 12,
+    durationMinutes: 47,
+    name: "steel ball run"
+  };
+  events["2026-3-19"] = [testEvent];
+
+  function getDayByIndex(date, index) {
+    return date.getDate() + index - getDayOfWeekIndex(date);
+  }
+  function getDateByIndex(date, index) {
+    return new Date(date.getFullYear(), date.getMonth(), getDayByIndex(date, index));
+  }
+  function dayInBounds(date, index, month) {
+    return getDayByIndex(date, index) > 0 && getDayByIndex(date, index) <= getDaysInMonth(month);
+  }
+
   return (
     <div>
       <button onClick={backClick}>{getMonthName(month)} {year}</button>
@@ -104,15 +149,27 @@ function WeekGrid(props) {
         <tr>
           <th></th>
           {Array.from(Array(7)).map((_, index) => (
-            <th>{getDayName(index)} {month}/{day + index - dayOfWeekIndex}</th>
+            <th>
+            {getDayName(index)} {dayInBounds(date, index, month)
+              ? month + 1
+              : ""
+            }
+            {dayInBounds(date, index, month) ? "/" : ""}
+            {dayInBounds(date, index, month)
+              ? getDayByIndex(date, index)
+              : ""
+            }</th>
           ))}
         </tr>
         {Array.from(Array(24)).map((_, hourIndex) => (
           <tr>
             <td>{getHourName(hourIndex)}</td>
-            {Array.from(Array(7)).map((_, index) => (
+            {Array.from(Array(7)).map((_, dayIndex) => (
               <td>
-                _
+                {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
+                  ? "_"
+                  : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex)[0].name
+                }
               </td>
             ))}
           </tr>
