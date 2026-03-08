@@ -24,7 +24,7 @@ function App() {
   return (
     <>
       <div className="calendar">
-        <MonthGrid day={2}/>
+        <MonthGrid/>
       </div>
     </>
   )
@@ -34,31 +34,53 @@ function mod(n, m) {
   return ((n % m) + m) % m;
 }
 
-function MonthGrid(props) {
-  let day = props.day;
-  const date = new Date();
-  const currentMonth = date.getMonth();
-  const currentDay = date.getDate();
-  const currentYear = date.getFullYear();
-
-  const leapYear = currentYear % 400 == 0 || (currentYear % 4 == 0 && currentYear % 100 != 0);
-  const janFirstOffset = (currentYear % 100 + Math.floor(currentYear % 100/4)) % 7
-    + (leapYear ? -1 : 0);
-  const monthOffsets = [0,3,3,6,1,4,6,2,5,0,3,5];
-  const currentMonthOffset = monthOffsets[currentMonth] + janFirstOffset;
+function getDaysInMonth(month, leapYear) {
   const monthDays = [31,28,31,30,31,30,31,31,30,31,30,31];
-  const currentMonthDays = monthDays[currentMonth] + (leapYear && currentMonth == 1 ? 1 : 0);
-  const prevMonth = mod(currentMonth - 1, 12);
-  const prevMonthDays = monthDays[prevMonth] + (leapYear && prevMonth == 1 ? 1 : 0);
+  return monthDays[month] + (leapYear && month == 1 ? 1 : 0);
+}
+
+function getMonthName(month) {
   const monthNames = ['January','February','March','April','May','June','July',
     'August','September','October','November','December'];
+  return monthNames[month];
+}
+
+function isLeapYear(year) {
+  return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
+}
+
+function getMonthOffset(month, year, leapYear) {
+  const janFirstOffset = (year % 100 + Math.floor(year % 100/4)) % 7
+    + (leapYear ? -1 : 0);
+  const monthOffsets = [0,3,3,6,1,4,6,2,5,0,3,5];
+  const result = (monthOffsets[month] + janFirstOffset) % 7;
+  return result == 0 ? 7 : result;
+}
+
+function MonthGrid(props) {
+  // let day = props.day;
+  const [date, setDate] = useState(new Date());
+  // const date = new Date();
+  const currentMonth = date.getMonth();
+  // const currentDay = date.getDate();
+  const currentYear = date.getFullYear();
+
+  const leapYear = isLeapYear(currentYear);
+  const currentMonthOffset = getMonthOffset(currentMonth, currentYear, leapYear);
+  const currentMonthDays = getDaysInMonth(currentMonth, leapYear);
+  const prevMonth = mod(currentMonth - 1, 12);
+  const prevMonthDays = getDaysInMonth(prevMonth, leapYear);
 
   return (
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}>
-      <div>
-        {monthNames[currentMonth]}
-      </div>
+      <button onClick={() => {
+        setDate(currentMonth == 11
+          ? new Date(currentYear + 1, 0)
+          : new Date(currentYear, currentMonth + 1));
+      }}>
+        {getMonthName(currentMonth)} {currentYear}
+      </button>
       <Grid container spacing={0.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
           index >= currentMonthOffset
