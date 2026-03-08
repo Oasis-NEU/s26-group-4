@@ -33,15 +33,37 @@ const View = {
   WEEK: "week",
 }
 
+function getDayName(index) {
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return dayNames[index];
+}
+
+function getHourName(index) {
+  let am = true;
+  if (index >= 12) {
+    am = false;
+    index = mod(index, 12);
+  }
+  index = index == 0 ? 12 : index;
+  return `${index} ${am ? "AM" : "PM"}`
+}
+
+function getDayOfWeekIndex(date) {
+  let monthOffset = getMonthOffset(date.getMonth(), date.getFullYear(),
+    isLeapYear(date.getFullYear));
+  return mod(monthOffset + date.getDate() - 1, 7);
+}
+
 function Calendar() {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(View.MONTH);
 
-  function handleClick(day, active) {
+  function monthCellClick(day, active) {
     if (active) {
       return () => {
-        alert(day);
+        // alert(day);
         setView(View.WEEK);
+        setDate(new Date(date.getFullYear(), date.getMonth(), day));
       }
     }
     return () => {
@@ -56,8 +78,46 @@ function Calendar() {
 
   return (
     <div className="calendar">
-      <MonthGrid date={date} setDate={setDate} handleClick={handleClick}/>
-      view: {view}
+      {
+        view == View.MONTH
+          ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
+          : <WeekGrid date={date} setDate={setDate} backClick={() => {setView(View.MONTH)}}/>
+      }
+    </div>
+  )
+}
+
+function WeekGrid(props) {
+  const date = props.date;
+  const setDate = props.setDate;
+  const backClick = props.backClick;
+
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  const day = date.getDate();
+  const dayOfWeekIndex = getDayOfWeekIndex(date);
+
+  return (
+    <div>
+      <button onClick={backClick}>{getMonthName(month)} {year}</button>
+      <table>
+        <tr>
+          <th></th>
+          {Array.from(Array(7)).map((_, index) => (
+            <th>{getDayName(index)} {month}/{day + index - dayOfWeekIndex}</th>
+          ))}
+        </tr>
+        {Array.from(Array(24)).map((_, hourIndex) => (
+          <tr>
+            <td>{getHourName(hourIndex)}</td>
+            {Array.from(Array(7)).map((_, index) => (
+              <td>
+                _
+              </td>
+            ))}
+          </tr>
+        ))}
+      </table>
     </div>
   )
 }
@@ -92,17 +152,19 @@ function getMonthOffset(month, year, leapYear) {
 function incrementMonth(date) {
   const month = date.getMonth();
   const year = date.getFullYear();
+  const day = date.getDate();
   return month == 11
-          ? new Date(year + 1, 0)
-          : new Date(year, month + 1)
+          ? new Date(year + 1, 0, day)
+          : new Date(year, month + 1, day);
 }
 
 function decrementMonth(date) {
   const month = date.getMonth();
   const year = date.getFullYear();
+  const day = date.getDate();
   return month == 0
-          ? new Date(year - 1, 11)
-          : new Date(year, month - 1);
+          ? new Date(year - 1, 11, day)
+          : new Date(year, month - 1, day);
 }
 
 function MonthGrid(props) {
