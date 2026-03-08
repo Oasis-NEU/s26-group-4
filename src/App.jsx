@@ -82,12 +82,18 @@ function MonthGrid(props) {
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}>
       <button onClick={() => {
+        setDate(currentMonth == 0
+          ? new Date(currentYear - 1, 11)
+          : new Date(currentYear, currentMonth - 1));
+      }}>&lt;</button>
+      <button>
+        {getMonthName(currentMonth)} {currentYear}
+      </button>
+      <button onClick={() => {
         setDate(currentMonth == 11
           ? new Date(currentYear + 1, 0)
           : new Date(currentYear, currentMonth + 1));
-      }}>
-        {getMonthName(currentMonth)} {currentYear}
-      </button>
+      }}>&gt;</button>
       <Grid container spacing={0.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
           index >= currentMonthOffset
