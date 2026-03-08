@@ -23,10 +23,42 @@ function App() {
 
   return (
     <>
-      <div className="calendar">
-        <MonthGrid/>
-      </div>
+      <Calendar/>
     </>
+  )
+}
+
+const View = {
+  MONTH: "month",
+  WEEK: "week",
+}
+
+function Calendar() {
+  const [date, setDate] = useState(new Date());
+  const [view, setView] = useState(View.MONTH);
+
+  function handleClick(day, active) {
+    if (active) {
+      return () => {
+        alert(day);
+        setView(View.WEEK);
+      }
+    }
+    return () => {
+      if (day >= 14) {
+        setDate(decrementMonth)
+      }
+      else {
+        setDate(incrementMonth);
+      }
+    };
+  }
+
+  return (
+    <div className="calendar">
+      <MonthGrid date={date} setDate={setDate} handleClick={handleClick}/>
+      view: {view}
+    </div>
   )
 }
 
@@ -57,10 +89,26 @@ function getMonthOffset(month, year, leapYear) {
   return result == 0 ? 7 : result;
 }
 
+function incrementMonth(date) {
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  return month == 11
+          ? new Date(year + 1, 0)
+          : new Date(year, month + 1)
+}
+
+function decrementMonth(date) {
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  return month == 0
+          ? new Date(year - 1, 11)
+          : new Date(year, month - 1);
+}
+
 function MonthGrid(props) {
-  // let day = props.day;
-  const [date, setDate] = useState(new Date());
-  // const date = new Date();
+  const date = props.date;
+  const setDate = props.setDate;
+  const handleClick = props.handleClick;
   const currentMonth = date.getMonth();
   // const currentDay = date.getDate();
   const currentYear = date.getFullYear();
@@ -71,28 +119,17 @@ function MonthGrid(props) {
   const prevMonth = mod(currentMonth - 1, 12);
   const prevMonthDays = getDaysInMonth(prevMonth, leapYear);
 
-  function handleClick(day, active) {
-    return active ? () => {
-     alert(day);
-    }
-    : () => {};
-  }
-
   return (
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}>
       <button onClick={() => {
-        setDate(currentMonth == 0
-          ? new Date(currentYear - 1, 11)
-          : new Date(currentYear, currentMonth - 1));
+        setDate(decrementMonth(date));
       }}>&lt;</button>
       <button>
         {getMonthName(currentMonth)} {currentYear}
       </button>
       <button onClick={() => {
-        setDate(currentMonth == 11
-          ? new Date(currentYear + 1, 0)
-          : new Date(currentYear, currentMonth + 1));
+        setDate(incrementMonth(date));
       }}>&gt;</button>
       <Grid container spacing={0.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
