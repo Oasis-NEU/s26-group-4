@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
+import { grey, red } from '@mui/material/colors';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -256,7 +257,7 @@ function MonthGrid(props) {
           ? <MonthCell day={mod((index-currentMonthOffset), currentMonthDays) + 1}
             active={index-currentMonthOffset<currentMonthDays}
             click={handleClick}/>
-          : <MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}
+          :<MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}
             active={false}
             click={handleClick}/>
         ))}
@@ -271,7 +272,7 @@ function MonthCell(props){
   let click = props.click;
   return (
     <Grid size={1}>
-      <Item onClick={click(day, active)}>{day}</Item>
+      <Item className={active ? "" : "inactive"} onClick={click(day, active)}>{day}</Item>
     </Grid>
   );
 }
