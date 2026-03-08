@@ -2,60 +2,24 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  isWithinInterval,
-} from "date-fns"; //remember to install date-fns
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import { grey, red } from '@mui/material/colors';
 
-function filterBy(events, filter, date){
-  let interval;
-
-  switch (filter) {
-    case "day":
-      interval = { start: startOfDay(date), end: endOfDay(date) };
-      break;
-    case "week":
-      interval = { start: startOfWeek(date), end: endOfWeek(date) };
-      break;
-    case "month":
-      interval = { start: startOfMonth(date), end: endOfMonth(date) };
-      break;
-    default:
-      return events; // No filter applied
-  }
-
-  return events.filter(event => isWithinInterval(new Date(event.date), interval));
-}
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: (theme.vars ?? theme).palette.text.secondary,
+  ...theme.applyStyles('dark', {
+    backgroundColor: '#1A2027',
+  }),
+}));
 
 function App() {
-<<<<<<< HEAD
-  const [count, setCount] = useState(0)
-  const [view, setView] = useState("day");
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const visibleTasks = useMemo(
-    () => filterTasks(allTasks, view, selectedDate),
-    [allTasks, view, selectedDate]
-  );
-  
-
-  return (
-    <div className="view-switcher">
-        <button onClick={() => setView("day")}>Day</button>
-        <button onClick={() => setView("week")}>Week</button>
-        <button onClick={() => setView("month")}>Month</button>
-        <ViewSwitcher view={view} setView={setView} />
-      </div>
-      
-  )
-}
-
-=======
   // const [count, setCount] = useState(0)
 
   return (
@@ -335,7 +299,7 @@ function MonthGrid(props) {
           ? <MonthCell day={mod((index-currentMonthOffset), currentMonthDays) + 1}
             active={index-currentMonthOffset<currentMonthDays}
             click={handleClick}/>
-          : <MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}
+          :<MonthCell day={mod((index-currentMonthOffset), prevMonthDays) + 1}
             active={false}
             click={handleClick}/>
         ))}
@@ -350,12 +314,11 @@ function MonthCell(props){
   let click = props.click;
   return (
     <Grid size={1}>
-      <Item onClick={click(day, active)}>{day}</Item>
+      <Item className={active ? "" : "inactive"} onClick={click(day, active)}>{day}</Item>
     </Grid>
   );
 }
 
->>>>>>> f19da3f (monthcell object creation)
 export default App
 
 // BrowserRouter
