@@ -45,3 +45,7 @@
   background-color: rgba(67, 67, 67, 0.5);
   padding: 10px;
 }
+
+.eventAdder {
+  background-color: rgba(30,30,30, 0.5);
+}

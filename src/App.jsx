@@ -57,6 +57,17 @@ function getDayOfWeekIndex(date) {
 function Calendar() {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(View.MONTH);
+  const [events, setEvents] = useState({
+    "2026-3-19": [{
+      startHourIndex: 12,
+      durationMinutes: 47,
+      name: "steel ball run"
+    },{
+      startHourIndex: 12,
+      durationMinutes: 24,
+      name: "other event"
+    }]
+  })
 
   function monthCellClick(day, active) {
     if (active) {
@@ -81,7 +92,8 @@ function Calendar() {
       {
         view == View.MONTH
           ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
-          : <WeekGrid date={date} setDate={setDate} backClick={() => {setView(View.MONTH)}}/>
+          : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
+            backClick={() => {setView(View.MONTH)}}/>
       }
     </div>
   )
@@ -114,23 +126,25 @@ function getEventsByHour(events, date, hourIndex) {
   // })
 }
 
+function EventAdder() {
+  return (
+    <button className="eventAdder">
+      Add Event
+    </button>
+  )
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
+  const events = props.events;
+  const setEvents = props.setEvents;
   const backClick = props.backClick;
 
   const month = date.getMonth();
   const year = date.getFullYear();
   const day = date.getDate();
-  const dayOfWeekIndex = getDayOfWeekIndex(date);
-
-  let events = {};
-  let testEvent = {
-    startHourIndex: 12,
-    durationMinutes: 47,
-    name: "steel ball run"
-  };
-  events["2026-3-19"] = [testEvent];
+  // const dayOfWeekIndex = getDayOfWeekIndex(date);
 
   function getDayByIndex(date, index) {
     return date.getDate() + index - getDayOfWeekIndex(date);
@@ -141,6 +155,13 @@ function WeekGrid(props) {
   function dayInBounds(date, index, month) {
     return getDayByIndex(date, index) > 0 && getDayByIndex(date, index) <= getDaysInMonth(month);
   }
+
+  console.log("asdas");
+  console.log(getEventsByHour(events, new Date(2026, 2, 19), 12));
+  console.log(getEventsByHour(events, getDateByIndex(date, 4), 12));
+  console.log(getEventsByHour(events, getDateByIndex(date, 4), 12).map((event) => {
+                    return event.name;
+                  }));
 
   return (
     <div>
@@ -167,14 +188,17 @@ function WeekGrid(props) {
             {Array.from(Array(7)).map((_, dayIndex) => (
               <td>
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
-                  ? "_"
-                  : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex)[0].name
+                  ? "-"
+                  : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
+                    return (<div>{event.name}</div>);
+                  })
                 }
               </td>
             ))}
           </tr>
         ))}
       </table>
+      <EventAdder/>
     </div>
   )
 }
