@@ -49,3 +49,7 @@
 .eventAdder {
   background-color: rgba(30,30,30, 0.5);
 }
+
+.inactive.MuiPaper-root{
+  background-color: gray;
+}
