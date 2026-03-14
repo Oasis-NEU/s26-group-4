@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MonthGrid from './MonthGrid';
+import { incrementMonth, decrementMonth } from './MonthGrid'
 import WeekGrid from './WeekGrid';
 
 function Calendar() {
