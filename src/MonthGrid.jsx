@@ -56,7 +56,7 @@ function MonthGrid(props) {
   );
 }
 
-function incrementMonth(date) {
+export function incrementMonth(date) {
   const month = date.getMonth();
   const year = date.getFullYear();
   const day = date.getDate();
@@ -65,7 +65,7 @@ function incrementMonth(date) {
           : new Date(year, month + 1, day);
 }
 
-function decrementMonth(date) {
+export function decrementMonth(date) {
   const month = date.getMonth();
   const year = date.getFullYear();
   const day = date.getDate();
