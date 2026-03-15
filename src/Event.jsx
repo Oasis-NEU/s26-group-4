@@ -9,7 +9,9 @@ function addEvent(formData, date, events, setEvents) {
   const day = formData.get("day");
   const starts = formData.get("starts");
   const eventName = formData.get("eventName");
-  let event = newEvent(starts.substring(0,starts.length-3), 60, eventName);
+  let hourNumber = starts.substring(0,starts.length-3);
+  let hourIndex = (hourNumber == "12" ? 0 : parseInt(hourNumber)) + (starts.substring(starts.length-2) == "PM" ? 12 : 0);
+  let event = newEvent(hourIndex, 60, eventName);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   // console.log(eventDate);
   let newEvents = {}
