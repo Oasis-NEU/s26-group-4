@@ -3,6 +3,12 @@ export function getDayName(index) {
   return dayNames[index];
 }
 
+export function getDayIndexByName(name) {
+  const dayIndexes = {
+    Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6
+  }
+}
+
 export function getHourName(index) {
   let am = true;
   if (index >= 12) {

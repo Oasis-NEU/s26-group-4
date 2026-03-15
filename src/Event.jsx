@@ -1,19 +1,59 @@
-import { getDayName, getHourName } from './Util.jsx'
+import { getDayIndexByName, getDayName, getHourName, hashDate } from './Util.jsx'
+import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
+
+function newEvent(startHourIndex, durationMinutes, name) {
+  return {startHourIndex: startHourIndex, durationMinutes: durationMinutes, name: name}
+}
+
+function addEvent(formData, date, events, setEvents) {
+  const day = formData.get("day");
+  const starts = formData.get("starts");
+  const eventName = formData.get("eventName");
+  let event = newEvent(starts.substring(0,starts.length-3), 60, eventName);
+  let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
+  // console.log(eventDate);
+  let newEvents = {}
+  let hashed = hashDate(eventDate)
+  Object.assign(newEvents, events)
+  if (events[hashed] == null) {
+    newEvents[hashed] = [event]
+    setEvents(newEvents)
+  }
+  else {
+    let eventList = events[hashed];
+    eventList.push(event);
+    newEvents[hashed] = eventList;
+    setEvents(newEvents);
+  }
+  // console.log(newEvents);
+}
 
 function EventAdder(props) {
+  const date = props.date;
+  const setDate = props.setDate;
   const events = props.events;
   const setEvents = props.setEvents;
+  
+  const validDays = [];
+  for (let i = 0; i < 7; i++) {
+    if (dayInBounds(date, i, date.getMonth())) {
+      validDays.push(getDateByIndex(date, i));
+    }
+    // console.log(validDays[i]);
+  }
   return (
     <div className="eventAdder">
-      <form onClick={(e) => (
-          e.preventDefault()
-        )}>
-        <select name="Day">
-          {Array.from(Array(7)).map((_, index) => (
-            <option value={getDayName(index)}>{getDayName(index)}</option>
+      <form action={(formData) => (addEvent(formData, date, events, setEvents))}>
+        <select name="day">
+          {Array.from(Array(validDays.length)).map((_, index) => (
+            <option value={validDays[index].getDate()}>
+              {validDays[index].getMonth()+1}/{validDays[index].getDate()}</option>
           ))}
+          {/* {Array.from(Array(7)).map((_, index) => (
+            <option value={getDayName(index)}>{getDayName(index)}</option>
+          ))} */}
         </select>
-        <select name="Starts">
+        <select name="starts">
           {Array.from(Array(24)).map((_, index) => (
             <option value={getHourName(index)}>{getHourName(index)}</option>
           ))}
