@@ -1,6 +1,22 @@
 import EventAdder from "./Event";
 import { getDayName, getHourName, getMonthName, getDaysInMonth, getMonthOffset, mod, isLeapYear, hashDate } from './Util.jsx'
 
+export function getDayByIndex(date, index) {
+  return date.getDate() + index - getDayOfWeekIndex(date);
+}
+export function getDateByIndex(date, index) {
+  return new Date(date.getFullYear(), date.getMonth(), getDayByIndex(date, index));
+}
+export function dayInBounds(date, index, month) {
+  return getDayByIndex(date, index) > 0 && getDayByIndex(date, index) <= getDaysInMonth(month);
+}
+
+export function getDayOfWeekIndex(date) {
+  let monthOffset = getMonthOffset(date.getMonth(), date.getFullYear(),
+    isLeapYear(date.getFullYear));
+  return mod(monthOffset + date.getDate() - 1, 7);
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
@@ -12,16 +28,6 @@ function WeekGrid(props) {
   const year = date.getFullYear();
   const day = date.getDate();
   // const dayOfWeekIndex = getDayOfWeekIndex(date);
-
-  function getDayByIndex(date, index) {
-    return date.getDate() + index - getDayOfWeekIndex(date);
-  }
-  function getDateByIndex(date, index) {
-    return new Date(date.getFullYear(), date.getMonth(), getDayByIndex(date, index));
-  }
-  function dayInBounds(date, index, month) {
-    return getDayByIndex(date, index) > 0 && getDayByIndex(date, index) <= getDaysInMonth(month);
-  }
 
   // console.log("asdas");
   // console.log(getEventsByHour(events, new Date(2026, 2, 19), 12));
@@ -65,15 +71,9 @@ function WeekGrid(props) {
           </tr>
         ))}
       </table>
-      <EventAdder events={events} setEvents={setEvents}/>
+      <EventAdder date={date} setDate={setDate} events={events} setEvents={setEvents}/>
     </div>
   )
-}
-
-function getDayOfWeekIndex(date) {
-  let monthOffset = getMonthOffset(date.getMonth(), date.getFullYear(),
-    isLeapYear(date.getFullYear));
-  return mod(monthOffset + date.getDate() - 1, 7);
 }
 
 function getEventsByHour(events, date, hourIndex) {
