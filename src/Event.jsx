@@ -8,10 +8,12 @@ function newEvent(startHourIndex, durationMinutes, name) {
 function addEvent(formData, date, events, setEvents) {
   const day = formData.get("day");
   const starts = formData.get("starts");
+  const duration = formData.get("duration");
   const eventName = formData.get("eventName");
+
   let hourNumber = starts.substring(0,starts.length-3);
   let hourIndex = (hourNumber == "12" ? 0 : parseInt(hourNumber)) + (starts.substring(starts.length-2) == "PM" ? 12 : 0);
-  let event = newEvent(hourIndex, 60, eventName);
+  let event = newEvent(hourIndex, duration, eventName);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   // console.log(eventDate);
   let newEvents = {}
@@ -55,12 +57,15 @@ function EventAdder(props) {
             <option value={getDayName(index)}>{getDayName(index)}</option>
           ))} */}
         </select>
+        <label for="starts"> Starts: </label>
         <select name="starts">
           {Array.from(Array(24)).map((_, index) => (
             <option value={getHourName(index)}>{getHourName(index)}</option>
           ))}
         </select>
-        {/* <label for="eventName">Name:</label> */}
+        <label for="duration"> Duration: </label>
+        <input type="number" min="0" name="duration" size="5"/>
+        <label for="eventName"> Name: </label>
         <input type="text" name="eventName"/>
         <input type="submit" value="Add Event"/>
       </form>
