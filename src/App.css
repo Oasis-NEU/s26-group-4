@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100..700&display=swap');
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -50,6 +52,44 @@
   background-color: rgba(30,30,30, 0.5);
 }
 
+body{
+  font-family: 'Josefin Sans';
+}
+
 .inactive.MuiPaper-root{
   background-color: gray;
+  width: 50%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  display: flex;
+  margin: auto;
+  font-size: 2.5vw;
+  font-family: 'Josefin Sans';
+}
+
+.active.MuiPaper-root{
+  background-color: white;
+  width: 50%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  display: flex;
+  margin: auto;
+  font-size: 2.5vw;
+  font-family: 'Josefin Sans';
+}
+
+.inactive:hover{
+  background: #5b5b5b;
+  transform: scale(1.1);
+}
+
+.active:hover {
+  background: #dcdcdc;
+  transform: scale(1.1);
 }

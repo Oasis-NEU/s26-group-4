@@ -41,7 +41,7 @@ function MonthGrid(props) {
       <button onClick={() => {
         setDate(incrementMonth(date));
       }}>&gt;</button>
-      <Grid container spacing={0.5} columns={7}>
+      <Grid container spacing={.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
           index >= currentMonthOffset
           ? <MonthCell day={mod((index-currentMonthOffset), currentMonthDays) + 1}
@@ -80,7 +80,7 @@ function MonthCell(props){
   let click = props.click;
   return (
     <Grid size={1}>
-      <Item className={active ? "" : "inactive"} onClick={click(day, active)}>{day}</Item>
+      <Item className={active ? "active" : "inactive"} onClick={click(day, active)}>{day}</Item>
     </Grid>
   );
 }
