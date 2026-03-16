@@ -93,3 +93,7 @@ body{
   background: #dcdcdc;
   transform: scale(1.1);
 }
+
+.button {
+  width : 175px;
+}

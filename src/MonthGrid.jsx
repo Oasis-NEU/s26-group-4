@@ -35,7 +35,7 @@ function MonthGrid(props) {
       <button onClick={() => {
         setDate(decrementMonth(date));
       }}>&lt;</button>
-      <button>
+      <button className={"button"}>
         {getMonthName(currentMonth)} {currentYear}
       </button>
       <button onClick={() => {
