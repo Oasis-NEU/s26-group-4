@@ -10,10 +10,12 @@ function Calendar() {
     "2026-3-19": [{
       hourIndex: 12,
       minutes: 0,
+      am: "AM",
       name: "steel ball run"
     },{
       hourIndex: 12,
       minutes: 30,
+      am: "AM",
       name: "other event"
     }]
   })

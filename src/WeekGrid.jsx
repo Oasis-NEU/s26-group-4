@@ -17,6 +17,26 @@ export function getDayOfWeekIndex(date) {
   return mod(monthOffset + date.getDate() - 1, 7);
 }
 
+export function getTopOffset(event) {
+  return event.minutes / 60 * 100;
+}
+
+export function padZeroMinutes(minutes) {
+  return minutes < 10 ? "0" + minutes : "" + minutes
+}
+
+export function hourIndexToHour(hourIndex) {
+  return hourIndex == 0 ? 12 : hourIndex
+}
+
+export function getDateString(event) {
+  return `${hourIndexToHour(event.hourIndex)}:${padZeroMinutes(event.minutes)} ${event.am}`
+}
+
+export function truncateTaskName(name) {
+  return name.length > 15 ? name.substring(0, 15) + "..." : name
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
@@ -63,7 +83,8 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div>{event.name}</div>);
+                    return (<div className="task" style={{top: `${getTopOffset(event)}%`}}>
+                      {truncateTaskName(event.name)}, {getDateString(event)}</div>);
                   })
                 }
               </td>

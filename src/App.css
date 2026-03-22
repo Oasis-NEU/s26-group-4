@@ -116,6 +116,10 @@ body{
 
 .weekGrid td {
   border: 1px solid #ccc;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 0.9cqw;
 }
 
 .weekGrid th.timeColumn {
@@ -123,4 +127,14 @@ body{
   position: relative;
   top: -10px;
 }
+<<<<<<< HEAD
 >>>>>>> c313e77 (weke grid same height)
+=======
+
+.weekGrid div.task {
+  position: absolute;
+  top: 0%;
+  border: 1px solid #5b5b5b;
+  width: 100%;
+}
+>>>>>>> 64a89fb (task height offset div based on minutes, format truncated task name and time)

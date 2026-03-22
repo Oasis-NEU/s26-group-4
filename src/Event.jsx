@@ -1,8 +1,8 @@
 import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
-function newEvent(hourIndex, minutes, name) {
-  return {hourIndex: hourIndex, minutes: minutes, name: name}
+function newEvent(hourIndex, minutes, am, name) {
+  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name}
 }
 
 function addEvent(formData, date, events, setEvents) {
@@ -13,7 +13,7 @@ function addEvent(formData, date, events, setEvents) {
   const name = formData.get("name");
 
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
-  let event = newEvent(hourIndex, minutes, name);
+  let event = newEvent(hourIndex, parseInt(minutes), am, name);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   // console.log(eventDate);
   let newEvents = {}
