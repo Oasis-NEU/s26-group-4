@@ -1,8 +1,30 @@
-import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Util.jsx'
+import { useState } from 'react';
+import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
 function newEvent(hourIndex, minutes, am, name) {
   return {hourIndex: hourIndex, minutes: minutes, am: am, name: name}
+}
+
+function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWeekdays) {
+  if (!recurringEnabled) {
+    return [startDate];
+  }
+
+  const recurringDates = [];
+  const validWeekdays = selectedWeekdays.length > 0
+    ? selectedWeekdays
+    : [startDate.getDay()];
+
+  let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  while (recurringDates.length < occurrences) {
+    if (validWeekdays.includes(cursor.getDay())) {
+      recurringDates.push(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return recurringDates;
 }
 
 function addEvent(formData, date, events, setEvents) {
@@ -11,25 +33,34 @@ function addEvent(formData, date, events, setEvents) {
   const minutes = formData.get("minutes");
   const am = formData.get("am");
   const name = formData.get("name");
+  const recurringEnabled = formData.get("isRecurring") == "on";
+  const occurrences = recurringEnabled
+    ? Math.max(1, parseInt(formData.get("occurrences") ?? "1") || 1)
+    : 1;
+  const selectedWeekdays = recurringEnabled
+    ? formData.getAll("repeatDays").map((value) => parseInt(value))
+    : [];
 
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
-  let event = newEvent(hourIndex, parseInt(minutes), am, name);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
-  // console.log(eventDate);
+  let recurringDates = getRecurringDates(eventDate, recurringEnabled, occurrences, selectedWeekdays);
   let newEvents = {}
-  let hashed = hashDate(eventDate)
   Object.assign(newEvents, events)
-  if (events[hashed] == null) {
-    newEvents[hashed] = [event]
-    setEvents(newEvents)
-  }
-  else {
-    let eventList = events[hashed];
-    eventList.push(event);
-    newEvents[hashed] = eventList;
-    setEvents(newEvents);
-  }
-  // console.log(newEvents);
+
+  recurringDates.forEach((recurrenceDate) => {
+    let event = newEvent(hourIndex, parseInt(minutes), am, name);
+    let hashed = hashDate(recurrenceDate)
+    if (newEvents[hashed] == null) {
+      newEvents[hashed] = [event]
+    }
+    else {
+      let eventList = newEvents[hashed];
+      eventList.push(event);
+      newEvents[hashed] = eventList;
+    }
+  });
+
+  setEvents(newEvents);
 }
 
 function EventAdder(props) {
@@ -45,13 +76,21 @@ function EventAdder(props) {
     }
     // console.log(validDays[i]);
   }
+
+  const [isRecurring, setIsRecurring] = useState(false);
+
+  function handleAddEvent(formData) {
+    addEvent(formData, date, events, setEvents);
+    setIsRecurring(false);
+  }
+
   return (
     <div className="eventAdder">
-      <form action={(formData) => (addEvent(formData, date, events, setEvents))}>
+      <form action={handleAddEvent}>
         <label for="day">Due Date: </label>
         <select name="day">
           {Array.from(Array(validDays.length)).map((_, index) => (
-            <option value={validDays[index].getDate()}>
+            <option key={index} value={`${validDays[index].getDate()}`}>
               {validDays[index].getMonth()+1}/{validDays[index].getDate()}</option>
           ))}
           {/* {Array.from(Array(7)).map((_, index) => (
@@ -59,27 +98,58 @@ function EventAdder(props) {
           ))} */}
         </select>
         <label for="hour"> Deadline: </label>
-        {/* <input type="number" min={1} max={12} name="hour"></input> */}
         <select name="hour">
           {Array.from(Array(12)).map((_, index) => (
-            <option value={index + 1}>{index + 1}</option>
+            <option key={index} value={index + 1}>{index + 1}</option>
           ))}
         </select>
         <label for="minutes"> : </label>
         <select name="minutes">
           {Array.from(Array(60)).map((_, index) => (
-            <option value={index}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
+            <option key={index} value={index.toString().length == 1 ? "0" + index.toString() : index.toString()}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
           ))}
         </select>
         <label for="am"> </label>
         <select name="am">
           {Array.from(Array(2)).map((_, index) => (
-            <option value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
+            <option key={index} value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
           ))}
         </select>
         <label for="name"> Name: </label>
         <input type="text" name="name"/>
+        <label for="isRecurring">
+          <input
+            type="checkbox"
+            name="isRecurring"
+            checked={isRecurring}
+            onChange={(event) => setIsRecurring(event.target.checked)}
+          />
+          Recurring event
+        </label>
         <input type="submit" value="Add Task"/>
+
+        {isRecurring ? (
+          <div style={{ marginTop: "8px" }}>
+            <label for="occurrences"> # Occurrences: </label>
+            <input
+              type="number"
+              name="occurrences"
+              min="1"
+              defaultValue="1"
+            />
+            <span style={{ marginLeft: "8px" }}>Repeat On: </span>
+            {Array.from(Array(7)).map((_, dayIndex) => (
+              <label key={dayIndex} style={{ marginLeft: "6px" }}>
+                <input
+                  type="checkbox"
+                  name="repeatDays"
+                  value={dayIndex}
+                />
+                {getDayName(dayIndex)}
+              </label>
+            ))}
+          </div>
+        ) : ""}
       </form>
     </div>
   )

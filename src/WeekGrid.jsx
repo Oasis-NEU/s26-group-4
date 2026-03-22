@@ -37,7 +37,7 @@ export function truncateTaskName(name) {
   return name.length > 15 ? name.substring(0, 15) + "..." : name
 }
 
-function hashName(name) {
+function hashNameToColor(name) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
