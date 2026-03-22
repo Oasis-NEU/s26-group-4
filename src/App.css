@@ -102,8 +102,8 @@ body{
   border: 1.5px solid white;
   background-color: black;
   position:absolute;
-  width: 250px;
-  right:41.65%; /* centered if fullscreen, not if minimized, make width a % to fix */
+  width: 275px;
+  right:40.85%; /* centered if fullscreen, not if minimized, make width a % to fix */
   z-index: 9;
   visibility: hidden;
 }
