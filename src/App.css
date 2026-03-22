@@ -72,6 +72,7 @@ body{
   margin: auto;
   font-size: 2.5vw;
   font-family: 'Josefin Sans';
+  user-select: none;
 }
 
 .active.MuiPaper-root{
@@ -86,6 +87,7 @@ body{
   margin: auto;
   font-size: 2.5vw;
   font-family: 'Josefin Sans';
+  user-select: none;
 }
 
 .inactive:hover{
@@ -96,5 +98,29 @@ body{
 .active:hover {
   background: #dcdcdc;
   transform: scale(1.1);
+<<<<<<< HEAD
 >>>>>>> be44a00 (circle grid appearance)
 }
+=======
+}
+
+.weekGrid {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.weekGrid tr {
+  height: 75px;
+}
+
+.weekGrid td {
+  border: 1px solid #ccc;
+}
+
+.weekGrid th.timeColumn {
+  vertical-align: top;
+  position: relative;
+  top: -10px;
+}
+>>>>>>> c313e77 (weke grid same height)

@@ -39,7 +39,7 @@ function WeekGrid(props) {
   return (
     <div>
       <button onClick={backClick}>{getMonthName(month)} {year}</button>
-      <table>
+      <table class="weekGrid">
         <tr>
           <th></th>
           {Array.from(Array(7)).map((_, index) => (
@@ -57,11 +57,11 @@ function WeekGrid(props) {
         </tr>
         {Array.from(Array(24)).map((_, hourIndex) => (
           <tr>
-            <td>{getHourName(hourIndex)}</td>
+            <th className="timeColumn">{getHourName(hourIndex)}</th>
             {Array.from(Array(7)).map((_, dayIndex) => (
               <td>
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
-                  ? "-"
+                  ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
                     return (<div>{event.name}</div>);
                   })
@@ -87,7 +87,7 @@ function getEventsByHour(events, date, hourIndex) {
     return [];
   }
   for (let i = 0; i < todayEvents.length; i++) {
-    if (todayEvents[i].startHourIndex == hourIndex) {
+    if (todayEvents[i].hourIndex == hourIndex) {
       let copy = {};
       Object.assign(copy, todayEvents[i]);
       filtered.push(copy);

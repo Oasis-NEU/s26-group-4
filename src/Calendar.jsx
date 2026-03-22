@@ -8,12 +8,12 @@ function Calendar() {
   const [view, setView] = useState(View.MONTH);
   const [events, setEvents] = useState({
     "2026-3-19": [{
-      startHourIndex: 12,
-      durationMinutes: 47,
+      hourIndex: 12,
+      minutes: 0,
       name: "steel ball run"
     },{
-      startHourIndex: 12,
-      durationMinutes: 24,
+      hourIndex: 12,
+      minutes: 30,
       name: "other event"
     }]
   })
