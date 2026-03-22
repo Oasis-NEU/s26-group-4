@@ -18,7 +18,7 @@ const PERSPECTIVE = 800; // CSS perspective value — lower = more dramatic 3D c
 //   onChange      — callback fired with the new index when selection changes
 //   label         — optional header text above the column
 // ============================================================
-function WheelColumn({ items, selectedIndex, onChange, label }) {
+function WheelColumn({date, items, selectedIndex, onChange, label }) {
 
   const containerRef = useRef(null);
   const isDragging = useRef(false);
@@ -107,18 +107,13 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
 
   // ============================================================
   // POINTER EVENT HANDLERS
-  //
-  // [FIX #2] We track `hasMoved` to distinguish a click (pointer
-  // down + up with no movement) from a drag. On desktop, pointer
-  // capture can swallow click events, so we handle click-to-select
-  // inside handlePointerUp when hasMoved is false.
   // ============================================================
 
   const handlePointerDown = (e) => {
     if (animFrame.current) cancelAnimationFrame(animFrame.current);
 
     isDragging.current = true;
-    hasMoved.current = false;            // [FIX #2] Reset — hasn't moved yet
+    hasMoved.current = false;          
     startY.current = e.clientY;
     startOffset.current = offset;
     velocity.current = 0;
@@ -133,7 +128,7 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
 
     const dy = e.clientY - startY.current;
 
-    // [FIX #2] Mark as a drag if the pointer moved more than 3px
+    // Mark as a drag if the pointer moved more than 3px
     if (Math.abs(dy) > 3) {
       hasMoved.current = true;
     }
@@ -146,7 +141,7 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
     lastY.current = e.clientY;
     lastTime.current = now;
 
-    // [FIX #1] Clamp during drag so you can't scroll past the edges
+    // Clamp during drag so you can't scroll past the edges
     setOffset(clampOffset(startOffset.current + dy));
   };
 
@@ -154,7 +149,7 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
     if (!isDragging.current) return;
     isDragging.current = false;
 
-    // [FIX #2] If the pointer didn't move, treat it as a click.
+    // If the pointer didn't move, treat it as a click.
     // Figure out which item was clicked based on the pointer Y position.
     if (!hasMoved.current) {
       const rect = containerRef.current?.getBoundingClientRect();
@@ -186,43 +181,27 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
 
   // ============================================================
   // SCROLL WHEEL / TRACKPAD HANDLER
-  //
-  // [FIX #3] We attach a native event listener with { passive: false }
-  // so that preventDefault() actually works and stops the page from
-  // scrolling. React's onWheel is passive by default in modern browsers,
-  // which means preventDefault() is ignored.
-  //
-  // [FIX #4] We accumulate small scroll deltas and debounce the snap.
-  // Trackpads send many tiny deltaY values (1-5px each) over hundreds
-  // of milliseconds. The old code tried to snap on every single event,
-  // which meant small gestures got rounded away to nothing. Now we:
-  //   1. Accumulate deltas into scrollAccum
-  //   2. Move the wheel smoothly on every event
-  //   3. Only snap to the nearest item 150ms after scrolling stops
   // ============================================================
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const handleWheel = (e) => {
-      e.preventDefault();   // [FIX #3] Works because { passive: false }
-      e.stopPropagation();  // [FIX #3] Prevent any parent scroll containers from scrolling
+      e.preventDefault(); 
+      e.stopPropagation(); 
 
       if (animFrame.current) cancelAnimationFrame(animFrame.current);
 
-      // [FIX #4] Accumulate the delta
       scrollAccum.current += e.deltaY;
 
-      // Apply the accumulated scroll, clamped to valid range
       const newOffset = clampOffset(
         -Math.round(-offset / ITEM_HEIGHT) * ITEM_HEIGHT - scrollAccum.current * 0.6
       );
       setOffset(newOffset);
 
-      // [FIX #4] Debounce: wait for scrolling to stop, then snap
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       scrollTimeout.current = setTimeout(() => {
-        scrollAccum.current = 0; // Reset accumulator
+        scrollAccum.current = 0;
         clampAndSnap(newOffset);
       }, 150);
     };
@@ -249,7 +228,6 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
           letterSpacing: "0.08em",
           color: "var(--color-text-tertiary)",
           marginBottom: 8,
-          fontFamily: "'SF Pro Text', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
         }}>
           {label}
         </div>
@@ -354,9 +332,8 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
                   transition: isDragging.current
                     ? "none"
                     : "transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease",
-                  fontFamily: "'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
                   fontSize: isSelected ? 22 : 20,
-                  fontWeight: isSelected ? 500 : 400,
+                  fontWeight: isSelected ? 400 : 325,
                   color: isSelected ? "var(--color-text-primary)" : "var(--color-text-secondary)",
                   cursor: "pointer",
                   willChange: "transform, opacity",
@@ -372,27 +349,39 @@ function WheelColumn({ items, selectedIndex, onChange, label }) {
   );
 }
 
-
-// ============================================================
-// DATA
-// ============================================================
-const months = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"];
-const years = Array.from({ length: 100 }, (_, i) => String(2020 + i));
-
-
 // ============================================================
 // TimePicker
 // ============================================================
-export default function TimePicker() {
-  const [monthIdx, setMonthIdx] = useState(2);
-  const [yearIdx, setYearIdx] = useState(6);
+export default function TimePicker(props) {
+  const date = props.date;
+  const setDate = props.setDate;
 
-  const dateStr = `${months[monthIdx]}, ${years[yearIdx]}`;
+  const monthIdx = date.getMonth();
+  function setMonthIdx(month) {
+    const year = date.getFullYear();
+    const day = date.getDate();
+    setDate(new Date(year, month, day));
+  }
+//   const [monthIdx, setMonthIdx] = useState(date.getMonth());
+const months = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+const years = Array.from({ length: 500 }, (_, i) => String(new Date().getFullYear() - 250 + i));
+const yearIdx = 250;
+function setYearIdx(year) {
+    year = years[year];
+    const month = date.getMonth();
+    const day = date.getDate();
+    setDate(new Date(year, month, day));
+}
+//   const [yearIdx, setYearIdx] = useState(50);
+  const timeVisible = props.timeVisible;
+
+  const dateStr = `${months[monthIdx]}, ${date.getFullYear()}`;
+  console.log()
 
   return (
-    <div style={{
-      fontFamily: "'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+    <div className={"timePick"} style={{
+      visibility: `${timeVisible ? "visible" : "hidden"}`,
       maxWidth: 400,
       margin: "0 auto",
       padding: "2rem 0",
@@ -400,8 +389,8 @@ export default function TimePicker() {
       <div style={{
         textAlign: "center",
         marginBottom: 24,
-        fontSize: 36,
-        fontWeight: 300,
+        fontSize: 34,
+        fontWeight: 3200,
         letterSpacing: "-0.02em",
         color: "var(--color-text-primary)",
         fontVariantNumeric: "tabular-nums",
@@ -415,9 +404,9 @@ export default function TimePicker() {
         border: "0.5px solid var(--color-border-tertiary)",
         padding: "0 16px",
       }}>
-        <div style={{ display: "flex", gap: 0 }}>
-          <WheelColumn items={months} selectedIndex={monthIdx} onChange={setMonthIdx} label="Month" />
-          <WheelColumn items={years} selectedIndex={yearIdx} onChange={setYearIdx} label="Year" />
+        <div style={{ display: "flex", gap: 0}}>
+          <WheelColumn date={date} items={months} selectedIndex={monthIdx} onChange={setMonthIdx} label="Month" />
+          <WheelColumn date={date} items={years} selectedIndex={yearIdx} onChange={setYearIdx} label="Year" />
         </div>
       </div>
 
@@ -427,7 +416,7 @@ export default function TimePicker() {
         color: "var(--color-text-tertiary)",
         marginTop: 20,
       }}>
-        Drag to select
+        Drag, cllick, or scroll to select
       </p>
     </div>
   );

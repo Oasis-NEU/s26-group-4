@@ -3,6 +3,8 @@ import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import { getMonthName, getDaysInMonth, getMonthOffset, mod, isLeapYear } from './Util.jsx'
+import TimePicker from './TimePicker.jsx'
+import { useState } from 'react';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -16,6 +18,7 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 function MonthGrid(props) {
+  const [timeVisible, setTimeVisible] = useState(false);
   const date = props.date;
   const setDate = props.setDate;
   const handleClick = props.handleClick;
@@ -32,15 +35,20 @@ function MonthGrid(props) {
   return (
     //flex grow resizes cells by default if not fixed
     <Box sx={{ flexGrow: 1}}>
+      <div>
       <button onClick={() => {
         setDate(decrementMonth(date));
       }}>&lt;</button>
-      <button className={"button"}>
+      <button className={"button"} onClick={() => {
+          togglePicker(timeVisible, setTimeVisible);
+        }}>
         {getMonthName(currentMonth)} {currentYear}
       </button>
       <button onClick={() => {
         setDate(incrementMonth(date));
       }}>&gt;</button>
+      </div>
+      <TimePicker timeVisible={timeVisible} date={date} setDate={setDate}/>
       <Grid container spacing={.5} columns={7}>
         {Array.from(Array(42)).map((_, index) => (
           index >= currentMonthOffset
@@ -72,6 +80,10 @@ export function decrementMonth(date) {
   return month == 0
           ? new Date(year - 1, 11, day)
           : new Date(year, month - 1, day);
+}
+
+function togglePicker(timeVisible, setTimeVisible){
+  setTimeVisible(!timeVisible);
 }
 
 function MonthCell(props){

@@ -1,6 +1,5 @@
 import './App.css'
-import Calendar from './Calendar.jsx';
-import TimePicker from './TimePicker.jsx'
+import Calendar from './Calendar.jsx'
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -8,7 +7,6 @@ function App() {
   return (
     <>
       <Calendar/>
-      <TimePicker/>
     </>
   )
 }
