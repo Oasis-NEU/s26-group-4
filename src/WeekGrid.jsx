@@ -37,6 +37,14 @@ export function truncateTaskName(name) {
   return name.length > 15 ? name.substring(0, 15) + "..." : name
 }
 
+export function incrementWeek(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
+}
+
+export function decrementWeek(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7);
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
@@ -58,7 +66,13 @@ function WeekGrid(props) {
 
   return (
     <div>
+      <button onClick={() => {
+        setDate(decrementWeek(date));
+      }}>&lt;</button>
       <button onClick={backClick}>{getMonthName(month)} {year}</button>
+      <button onClick={() => {
+        setDate(incrementWeek(date));
+      }}>&gt;</button>
       <table class="weekGrid">
         <tr>
           <th></th>
