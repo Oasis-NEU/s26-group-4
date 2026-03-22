@@ -2,7 +2,7 @@ import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Uti
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
 function newEvent(hourIndex, minutes, am, name) {
-  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name}
+  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name, id: crypto.randomUUID()}
 }
 
 function addEvent(formData, date, events, setEvents) {

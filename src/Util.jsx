@@ -46,6 +46,7 @@ export function getMonthOffset(month, year, leapYear) {
   const janFirstOffset = (year % 100 + Math.floor(year % 100/4)) % 7
     + (leapYear ? -1 : 0);
   const monthOffsets = [0,3,3,6,1,4,6,2,5,0,3,5];
-  const result = (monthOffsets[month] + janFirstOffset) % 7;
+  let result = (monthOffsets[month] + janFirstOffset) % 7;
+  result = mod(result, 7);
   return result == 0 ? 7 : result;
 }

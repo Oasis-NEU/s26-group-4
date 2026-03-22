@@ -33,8 +33,15 @@ export function getDateString(event) {
   return `${hourIndexToHour(event.hourIndex)}:${padZeroMinutes(event.minutes)} ${event.am}`
 }
 
-export function truncateTaskName(name) {
-  return name.length > 15 ? name.substring(0, 15) + "..." : name
+export function truncateTaskName(name, dateString) {
+  // let maxLength = 25;
+  // if (indexOfCollision > 0) {
+  //   maxLength = maxLength / (indexOfCollision + 1);
+  // }
+  // let fullString = name + ", " + dateString;
+  // return ((fullString).length > maxLength ? fullString.substring(0, maxLength-3)
+  //   + "..." : fullString)
+  return name + ", " + dateString;
 }
 
 function WeekGrid(props) {
@@ -60,6 +67,9 @@ function WeekGrid(props) {
     <div>
       <button onClick={backClick}>{getMonthName(month)} {year}</button>
       <table class="weekGrid">
+        <colgroup>
+          <col span="1" style={{width: '5%'}}/>
+        </colgroup>
         <tr>
           <th></th>
           {Array.from(Array(7)).map((_, index) => (
@@ -83,8 +93,22 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" style={{top: `${getTopOffset(event)}%`}}>
-                      {truncateTaskName(event.name)}, {getDateString(event)}</div>);
+                    return (<div className="task" style={{top: `${getTopOffset(event)}%`,
+                    left: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
+                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
+                        (e) => e.id == event.id)
+                      / getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
+                        (group) => group.findIndex((e) => e.id == event.id) != -1).length * 100}%`,
+                    width: `${100 - getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
+                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
+                        (e) => e.id == event.id)
+                      / getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
+                        (group) => group.findIndex((e) => e.id == event.id) != -1).length * 100}%`,
+                    zIndex: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
+                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
+                        (e) => e.id == event.id)}`,
+                    }}>
+                      {truncateTaskName(event.name, getDateString(event))}</div>);
                   })
                 }
               </td>
@@ -113,6 +137,51 @@ function getEventsByHour(events, date, hourIndex) {
       Object.assign(copy, todayEvents[i]);
       filtered.push(copy);
     }
+  }
+  return filtered;
+  // return events[hashDate(date)].filter((event) => {
+  //   event.startHourIndex == hourIndex;
+  // })
+}
+
+const MINUTE_LENGTH = 15;
+
+function inRange(hourIndex, minutes, goalHourIndex, goalMinutes) {
+  if (hourIndex == goalHourIndex) {
+    return Math.abs(minutes - goalMinutes) < MINUTE_LENGTH;
+  }
+  else if (hourIndex == goalHourIndex - 1) {
+    return Math.abs(minutes - (goalMinutes+60)) < MINUTE_LENGTH;
+  }
+  else if (hourIndex == goalHourIndex + 1) {
+    return Math.abs(minutes - (goalMinutes-60)) < MINUTE_LENGTH;
+  }
+  return false;
+}
+
+function getEventCollisions(events, date) {
+  let filtered = [];
+  let todayEvents = events[hashDate(date)];
+  if (todayEvents == null) {
+    return [];
+  }
+  let lastHourIndex;
+  let lastMinutes;
+  for (let i = 0; i < todayEvents.length; i++) {
+    let collisionGroup;
+    if (!lastHourIndex || !inRange(todayEvents[i].hourIndex, todayEvents[i].minutes,
+      lastHourIndex, lastMinutes)) {
+      lastHourIndex = todayEvents[i].hourIndex;
+      lastMinutes = todayEvents[i].minutes;
+      collisionGroup = [];
+    }
+    else {
+      collisionGroup = filtered.pop();
+    }
+    let copy = {};
+    Object.assign(copy, todayEvents[i]);
+    collisionGroup.push(copy);
+    filtered.push(collisionGroup);
   }
   return filtered;
   // return events[hashDate(date)].filter((event) => {

@@ -11,12 +11,14 @@ function Calendar() {
       hourIndex: 12,
       minutes: 0,
       am: "AM",
-      name: "steel ball run"
+      name: "steel ball run",
+      id: crypto.randomUUID(),
     },{
       hourIndex: 12,
       minutes: 30,
       am: "AM",
-      name: "other event"
+      name: "other event",
+      id: crypto.randomUUID(),
     }]
   })
 
