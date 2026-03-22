@@ -195,8 +195,9 @@ function inRange(hourIndex, minutes, goalHourIndex, goalMinutes) {
 
 function getEventCollisions(events, date) {
   let filtered = [];
-  let todayEvents = events[hashDate(date)];
-  console.log(events[hashDate(date)]);
+  let todayEvents = events[hashDate(date)].sort(
+    (a,b) => (a.hourIndex*60+a.minutes) - (b.hourIndex*60+b.minutes));
+  // console.log(events[hashDate(date)]);
   if (todayEvents == null) {
     return [];
   }
@@ -218,7 +219,7 @@ function getEventCollisions(events, date) {
     collisionGroup.push(copy);
     filtered.push(collisionGroup);
   }
-  console.log(filtered);
+  // console.log(filtered);
   return filtered;
   // return events[hashDate(date)].filter((event) => {
   //   event.startHourIndex == hourIndex;
