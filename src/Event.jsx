@@ -1,19 +1,19 @@
-import { getDayIndexByName, getDayName, getHourName, hashDate } from './Util.jsx'
+import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
-function newEvent(startHourIndex, durationMinutes, name) {
-  return {startHourIndex: startHourIndex, durationMinutes: durationMinutes, name: name}
+function newEvent(hourIndex, minutes, name) {
+  return {hourIndex: hourIndex, minutes: minutes, name: name}
 }
 
 function addEvent(formData, date, events, setEvents) {
   const day = formData.get("day");
-  const starts = formData.get("starts");
-  const duration = formData.get("duration");
-  const eventName = formData.get("eventName");
+  const hour = formData.get("hour");
+  const minutes = formData.get("minutes");
+  const am = formData.get("am");
+  const name = formData.get("name");
 
-  let hourNumber = starts.substring(0,starts.length-3);
-  let hourIndex = (hourNumber == "12" ? 0 : parseInt(hourNumber)) + (starts.substring(starts.length-2) == "PM" ? 12 : 0);
-  let event = newEvent(hourIndex, duration, eventName);
+  let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
+  let event = newEvent(hourIndex, minutes, name);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   // console.log(eventDate);
   let newEvents = {}
@@ -48,6 +48,7 @@ function EventAdder(props) {
   return (
     <div className="eventAdder">
       <form action={(formData) => (addEvent(formData, date, events, setEvents))}>
+        <label for="day">Due Date: </label>
         <select name="day">
           {Array.from(Array(validDays.length)).map((_, index) => (
             <option value={validDays[index].getDate()}>
@@ -57,17 +58,28 @@ function EventAdder(props) {
             <option value={getDayName(index)}>{getDayName(index)}</option>
           ))} */}
         </select>
-        <label for="starts"> Starts: </label>
-        <select name="starts">
-          {Array.from(Array(24)).map((_, index) => (
-            <option value={getHourName(index)}>{getHourName(index)}</option>
+        <label for="hour"> Deadline: </label>
+        {/* <input type="number" min={1} max={12} name="hour"></input> */}
+        <select name="hour">
+          {Array.from(Array(12)).map((_, index) => (
+            <option value={index + 1}>{index + 1}</option>
           ))}
         </select>
-        <label for="duration"> Duration: </label>
-        <input type="number" min="0" name="duration" size="5"/>
-        <label for="eventName"> Name: </label>
-        <input type="text" name="eventName"/>
-        <input type="submit" value="Add Event"/>
+        <label for="minutes"> : </label>
+        <select name="minutes">
+          {Array.from(Array(60)).map((_, index) => (
+            <option value={index}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
+          ))}
+        </select>
+        <label for="am"> </label>
+        <select name="am">
+          {Array.from(Array(2)).map((_, index) => (
+            <option value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
+          ))}
+        </select>
+        <label for="name"> Name: </label>
+        <input type="text" name="name"/>
+        <input type="submit" value="Add Task"/>
       </form>
     </div>
   )
