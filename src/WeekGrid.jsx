@@ -44,6 +44,33 @@ export function truncateTaskName(name, dateString) {
   return name + ", " + dateString;
 }
 
+function hashNameToColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0;
+  }
+
+  const unsignedHash = hash >>> 0;
+  const red = ((unsignedHash >> 16) & 255);
+  const green = ((unsignedHash >> 8) & 255);
+  const blue = (unsignedHash & 255);
+
+  const normalizedRed = Math.floor(red / 2) + 64;
+  const normalizedGreen = Math.floor(green / 2) + 64;
+  const normalizedBlue = Math.floor(blue / 2) + 64;
+
+  return `#${normalizedRed.toString(16).padStart(2, '0')}${normalizedGreen.toString(16).padStart(2, '0')}${normalizedBlue.toString(16).padStart(2, '0')}`;
+}
+
+export function incrementWeek(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
+}
+
+export function decrementWeek(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7);
+}
+
 function WeekGrid(props) {
   const date = props.date;
   const setDate = props.setDate;
@@ -65,7 +92,13 @@ function WeekGrid(props) {
 
   return (
     <div>
+      <button onClick={() => {
+        setDate(decrementWeek(date));
+      }}>&lt;</button>
       <button onClick={backClick}>{getMonthName(month)} {year}</button>
+      <button onClick={() => {
+        setDate(incrementWeek(date));
+      }}>&gt;</button>
       <table class="weekGrid">
         <colgroup>
           <col span="1" style={{width: '5%'}}/>
@@ -94,6 +127,7 @@ function WeekGrid(props) {
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
                     return (<div className="task" style={{top: `${getTopOffset(event)}%`,
+                    backgroundColor: hashNameToColor(event.name),
                     left: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
                       (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
                         (e) => e.id == event.id)

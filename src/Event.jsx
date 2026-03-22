@@ -1,35 +1,54 @@
-import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Util.jsx'
+import { useEffect, useState } from 'react';
+import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
 function newEvent(hourIndex, minutes, am, name) {
   return {hourIndex: hourIndex, minutes: minutes, am: am, name: name, id: crypto.randomUUID()}
 }
 
-function addEvent(formData, date, events, setEvents) {
-  const day = formData.get("day");
-  const hour = formData.get("hour");
-  const minutes = formData.get("minutes");
-  const am = formData.get("am");
-  const name = formData.get("name");
+function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWeekdays) {
+  if (!recurringEnabled) {
+    return [startDate];
+  }
+
+  const recurringDates = [];
+  const validWeekdays = selectedWeekdays.length > 0
+    ? selectedWeekdays
+    : [startDate.getDay()];
+
+  let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+  while (recurringDates.length < occurrences) {
+    if (validWeekdays.includes(cursor.getDay())) {
+      recurringDates.push(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return recurringDates;
+}
+
+function addEvents(day, hour, minutes, am, name, date, events, setEvents, recurringEnabled, occurrences, selectedWeekdays) {
 
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
-  let event = newEvent(hourIndex, parseInt(minutes), am, name);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
-  // console.log(eventDate);
+  let recurringDates = getRecurringDates(eventDate, recurringEnabled, occurrences, selectedWeekdays);
   let newEvents = {}
-  let hashed = hashDate(eventDate)
   Object.assign(newEvents, events)
-  if (events[hashed] == null) {
-    newEvents[hashed] = [event]
-    setEvents(newEvents)
-  }
-  else {
-    let eventList = events[hashed];
-    eventList.push(event);
-    newEvents[hashed] = eventList;
-    setEvents(newEvents);
-  }
-  // console.log(newEvents);
+
+  recurringDates.forEach((recurrenceDate) => {
+    let event = newEvent(hourIndex, parseInt(minutes), am, name);
+    let hashed = hashDate(recurrenceDate)
+    if (newEvents[hashed] == null) {
+      newEvents[hashed] = [event]
+    }
+    else {
+      let eventList = newEvents[hashed];
+      eventList.push(event);
+      newEvents[hashed] = eventList;
+    }
+  });
+
+  setEvents(newEvents);
 }
 
 function EventAdder(props) {
@@ -45,13 +64,62 @@ function EventAdder(props) {
     }
     // console.log(validDays[i]);
   }
+
+  const [selectedDay, setSelectedDay] = useState(validDays.length > 0 ? `${validDays[0].getDate()}` : `${date.getDate()}`);
+  const [selectedHour, setSelectedHour] = useState("12");
+  const [selectedMinutes, setSelectedMinutes] = useState("00");
+  const [selectedAm, setSelectedAm] = useState("AM");
+  const [name, setName] = useState("");
+  const [occurrences, setOccurrences] = useState("1");
+  const [repeatDays, setRepeatDays] = useState([]);
+  const [isRecurring, setIsRecurring] = useState(false);
+
+  useEffect(() => {
+    const dayStillValid = validDays.some((d) => `${d.getDate()}` == selectedDay);
+    if (!dayStillValid && validDays.length > 0) {
+      setSelectedDay(`${validDays[0].getDate()}`);
+    }
+  }, [date, selectedDay]);
+
+  function onSubmit(event) {
+    event.preventDefault();
+    addEvents(
+      selectedDay,
+      selectedHour,
+      selectedMinutes,
+      selectedAm,
+      name,
+      date,
+      events,
+      setEvents,
+      isRecurring,
+      Math.max(1, parseInt(occurrences) || 1),
+      repeatDays,
+    );
+
+    setName("");
+    setIsRecurring(false);
+    setOccurrences("1");
+    setRepeatDays([]);
+  }
+
+  function onRepeatDayToggle(dayIndex, checked) {
+    if (checked) {
+      if (!repeatDays.includes(dayIndex)) {
+        setRepeatDays([...repeatDays, dayIndex]);
+      }
+      return;
+    }
+    setRepeatDays(repeatDays.filter((value) => value != dayIndex));
+  }
+
   return (
     <div className="eventAdder">
-      <form action={(formData) => (addEvent(formData, date, events, setEvents))}>
+      <form onSubmit={onSubmit}>
         <label for="day">Due Date: </label>
-        <select name="day">
+        <select name="day" value={selectedDay} onChange={(event) => setSelectedDay(event.target.value)}>
           {Array.from(Array(validDays.length)).map((_, index) => (
-            <option value={validDays[index].getDate()}>
+            <option key={index} value={`${validDays[index].getDate()}`}>
               {validDays[index].getMonth()+1}/{validDays[index].getDate()}</option>
           ))}
           {/* {Array.from(Array(7)).map((_, index) => (
@@ -59,27 +127,61 @@ function EventAdder(props) {
           ))} */}
         </select>
         <label for="hour"> Deadline: </label>
-        {/* <input type="number" min={1} max={12} name="hour"></input> */}
-        <select name="hour">
+        <select name="hour" value={selectedHour} onChange={(event) => setSelectedHour(event.target.value)}>
           {Array.from(Array(12)).map((_, index) => (
-            <option value={index + 1}>{index + 1}</option>
+            <option key={index} value={index + 1}>{index + 1}</option>
           ))}
         </select>
         <label for="minutes"> : </label>
-        <select name="minutes">
+        <select name="minutes" value={selectedMinutes} onChange={(event) => setSelectedMinutes(event.target.value)}>
           {Array.from(Array(60)).map((_, index) => (
-            <option value={index}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
+            <option key={index} value={index.toString().length == 1 ? "0" + index.toString() : index.toString()}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
           ))}
         </select>
         <label for="am"> </label>
-        <select name="am">
+        <select name="am" value={selectedAm} onChange={(event) => setSelectedAm(event.target.value)}>
           {Array.from(Array(2)).map((_, index) => (
-            <option value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
+            <option key={index} value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
           ))}
         </select>
         <label for="name"> Name: </label>
-        <input type="text" name="name"/>
+        <input type="text" name="name" value={name} onChange={(event) => setName(event.target.value)}/>
+        <label for="isRecurring">
+          <input
+            type="checkbox"
+            name="isRecurring"
+            checked={isRecurring}
+            onChange={(event) => setIsRecurring(event.target.checked)}
+          />
+          Recurring event
+        </label>
         <input type="submit" value="Add Task"/>
+
+        {isRecurring ? (
+          <div style={{ marginTop: "8px" }}>
+            <label for="occurrences"> # Occurrences: </label>
+            <input
+              type="number"
+              name="occurrences"
+              min="1"
+              value={occurrences}
+              onChange={(event) => setOccurrences(event.target.value)}
+            />
+            <span style={{ marginLeft: "8px" }}>Repeat On: </span>
+            {Array.from(Array(7)).map((_, dayIndex) => (
+              <label key={dayIndex} style={{ marginLeft: "6px" }}>
+                <input
+                  type="checkbox"
+                  name="repeatDays"
+                  value={dayIndex}
+                  checked={repeatDays.includes(dayIndex)}
+                  onChange={(event) => onRepeatDayToggle(dayIndex, event.target.checked)}
+                />
+                {getDayName(dayIndex)}
+              </label>
+            ))}
+          </div>
+        ) : ""}
       </form>
     </div>
   )
