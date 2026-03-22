@@ -97,7 +97,7 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" style={{top: `${getTopOffset(event)}%`}}>
+                    return (<div className="task" style={{top: `${getTopOffset(event)}%`, backgroundColor: event.color}}>
                       {truncateTaskName(event.name)}, {getDateString(event)}</div>);
                   })
                 }

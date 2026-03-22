@@ -1,9 +1,13 @@
 import { getDayIndexByName, getDayName, getHourName, hashDate, mod } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
-function newEvent(hourIndex, minutes, am, name) {
-  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name}
+function newEvent(hourIndex, minutes, am, name, color) {
+  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name, color: color}
 }
+const randomHexColor = () => {
+  // Take the last 6 digits of random hex number and pad with zeros if needed.
+  return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+};
 
 function addEvent(formData, date, events, setEvents) {
   const day = formData.get("day");
@@ -13,7 +17,7 @@ function addEvent(formData, date, events, setEvents) {
   const name = formData.get("name");
 
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
-  let event = newEvent(hourIndex, parseInt(minutes), am, name);
+  let event = newEvent(hourIndex, parseInt(minutes), am, name, randomHexColor());
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   // console.log(eventDate);
   let newEvents = {}
