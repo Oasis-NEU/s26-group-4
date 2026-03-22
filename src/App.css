@@ -108,10 +108,21 @@ body{
 
 .weekGrid td {
   border: 1px solid #ccc;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 0.9cqw;
 }
 
 .weekGrid th.timeColumn {
   vertical-align: top;
   position: relative;
   top: -10px;
+}
+
+.weekGrid div.task {
+  position: absolute;
+  top: 0%;
+  border: 1px solid #5b5b5b;
+  width: 100%;
 }
