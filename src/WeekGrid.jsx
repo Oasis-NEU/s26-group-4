@@ -37,6 +37,25 @@ export function truncateTaskName(name) {
   return name.length > 15 ? name.substring(0, 15) + "..." : name
 }
 
+function hashName(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0;
+  }
+
+  const unsignedHash = hash >>> 0;
+  const red = ((unsignedHash >> 16) & 255);
+  const green = ((unsignedHash >> 8) & 255);
+  const blue = (unsignedHash & 255);
+
+  const normalizedRed = Math.floor(red / 2) + 64;
+  const normalizedGreen = Math.floor(green / 2) + 64;
+  const normalizedBlue = Math.floor(blue / 2) + 64;
+
+  return `#${normalizedRed.toString(16).padStart(2, '0')}${normalizedGreen.toString(16).padStart(2, '0')}${normalizedBlue.toString(16).padStart(2, '0')}`;
+}
+
 export function incrementWeek(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
 }
@@ -97,7 +116,7 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" style={{top: `${getTopOffset(event)}%`, backgroundColor: event.color}}>
+                    return (<div className="task" style={{top: `${getTopOffset(event)}%`, backgroundColor: hashNameToColor(event.name)}}>
                       {truncateTaskName(event.name)}, {getDateString(event)}</div>);
                   })
                 }
