@@ -30,7 +30,7 @@ export function hourIndexToHour(hourIndex) {
 }
 
 export function getDateString(event) {
-  return `${hourIndexToHour(event.hourIndex)}:${padZeroMinutes(event.minutes)} ${event.am}`
+  return `${hourIndexToHour(event.hourIndex)}:${padZeroMinutes(event.minutes)} ${event.hourIndex < 12 ? "AM" : "PM"}`
 }
 
 export function truncateTaskName(name, dateString) {
@@ -196,6 +196,7 @@ function inRange(hourIndex, minutes, goalHourIndex, goalMinutes) {
 function getEventCollisions(events, date) {
   let filtered = [];
   let todayEvents = events[hashDate(date)];
+  console.log(events[hashDate(date)]);
   if (todayEvents == null) {
     return [];
   }
@@ -203,7 +204,7 @@ function getEventCollisions(events, date) {
   let lastMinutes;
   for (let i = 0; i < todayEvents.length; i++) {
     let collisionGroup;
-    if (!lastHourIndex || !inRange(todayEvents[i].hourIndex, todayEvents[i].minutes,
+    if (lastHourIndex == null || !inRange(todayEvents[i].hourIndex, todayEvents[i].minutes,
       lastHourIndex, lastMinutes)) {
       lastHourIndex = todayEvents[i].hourIndex;
       lastMinutes = todayEvents[i].minutes;
@@ -217,6 +218,7 @@ function getEventCollisions(events, date) {
     collisionGroup.push(copy);
     filtered.push(collisionGroup);
   }
+  console.log(filtered);
   return filtered;
   // return events[hashDate(date)].filter((event) => {
   //   event.startHourIndex == hourIndex;

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
-function newEvent(hourIndex, minutes, am, name) {
-  return {hourIndex: hourIndex, minutes: minutes, am: am, name: name, id: crypto.randomUUID()}
+function newEvent(hourIndex, minutes, name) {
+  return {hourIndex: hourIndex, minutes: minutes, name: name, id: crypto.randomUUID()}
 }
 
 function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWeekdays) {
@@ -28,7 +28,6 @@ function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWee
 }
 
 function addEvents(day, hour, minutes, am, name, date, events, setEvents, recurringEnabled, occurrences, selectedWeekdays) {
-
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   let recurringDates = getRecurringDates(eventDate, recurringEnabled, occurrences, selectedWeekdays);
@@ -36,7 +35,7 @@ function addEvents(day, hour, minutes, am, name, date, events, setEvents, recurr
   Object.assign(newEvents, events)
 
   recurringDates.forEach((recurrenceDate) => {
-    let event = newEvent(hourIndex, parseInt(minutes), am, name);
+    let event = newEvent(hourIndex, parseInt(minutes), name);
     let hashed = hashDate(recurrenceDate)
     if (newEvents[hashed] == null) {
       newEvents[hashed] = [event]
