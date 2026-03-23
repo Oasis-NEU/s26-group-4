@@ -95,7 +95,7 @@ function WeekGrid(props) {
       <button onClick={() => {
         setDate(decrementWeek(date));
       }}>&lt;</button>
-      <button onClick={backClick}>{getMonthName(month)} {year}</button>
+      <button className={"button"} onClick={backClick}>{getMonthName(month)} {year}</button>
       <button onClick={() => {
         setDate(incrementWeek(date));
       }}>&gt;</button>

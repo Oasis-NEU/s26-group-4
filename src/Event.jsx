@@ -116,7 +116,7 @@ function EventAdder(props) {
     <div className="eventAdder">
       <form onSubmit={onSubmit}>
         <label for="day">Due Date: </label>
-        <select name="day" value={selectedDay} onChange={(event) => setSelectedDay(event.target.value)}>
+        <select className={"font"} name="day" value={selectedDay} onChange={(event) => setSelectedDay(event.target.value)}>
           {Array.from(Array(validDays.length)).map((_, index) => (
             <option key={index} value={`${validDays[index].getDate()}`}>
               {validDays[index].getMonth()+1}/{validDays[index].getDate()}</option>
@@ -126,26 +126,26 @@ function EventAdder(props) {
           ))} */}
         </select>
         <label for="hour"> Deadline: </label>
-        <select name="hour" value={selectedHour} onChange={(event) => setSelectedHour(event.target.value)}>
+        <select className={"font"} name="hour" value={selectedHour} onChange={(event) => setSelectedHour(event.target.value)}>
           {Array.from(Array(12)).map((_, index) => (
             <option key={index} value={index + 1}>{index + 1}</option>
           ))}
         </select>
         <label for="minutes"> : </label>
-        <select name="minutes" value={selectedMinutes} onChange={(event) => setSelectedMinutes(event.target.value)}>
+        <select className={"font"} name="minutes" value={selectedMinutes} onChange={(event) => setSelectedMinutes(event.target.value)}>
           {Array.from(Array(60)).map((_, index) => (
             <option key={index} value={index.toString().length == 1 ? "0" + index.toString() : index.toString()}>{index.toString().length == 1 ? "0" + index.toString() : index.toString()}</option>
           ))}
         </select>
         <label for="am"> </label>
-        <select name="am" value={selectedAm} onChange={(event) => setSelectedAm(event.target.value)}>
+        <select className={"font"} name="am" value={selectedAm} onChange={(event) => setSelectedAm(event.target.value)}>
           {Array.from(Array(2)).map((_, index) => (
             <option key={index} value={index == 0 ? "AM" : "PM"}>{index == 0 ? "AM" : "PM"}</option>
           ))}
         </select>
         <label for="name"> Name: </label>
-        <input type="text" name="name" value={name} onChange={(event) => setName(event.target.value)}/>
-        <label for="isRecurring">
+        <input className={"font"} type="text" name="name" value={name} onChange={(event) => setName(event.target.value)}/>
+        <label for="isRecurring" style={{padding:10}}>
           <input
             type="checkbox"
             name="isRecurring"
@@ -154,7 +154,7 @@ function EventAdder(props) {
           />
           Recurring event
         </label>
-        <input type="submit" value="Add Task"/>
+        <input className={"font"} type="submit" value="Add Task"/>
 
         {isRecurring ? (
           <div style={{ marginTop: "8px" }}>

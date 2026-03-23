@@ -50,6 +50,8 @@
 
 .eventAdder {
   background-color: rgba(30,30,30, 0.5);
+  position: sticky;
+  bottom: 0;
 }
 
 body{
@@ -140,6 +142,10 @@ body{
 
 .button {
   width : 175px;
+}
+
+.font{
+  font-family: 'Josefin Sans';
 }
 
 .timePick {
