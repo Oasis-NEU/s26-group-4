@@ -19,6 +19,16 @@ export function getHourName(index) {
   return `${index} ${am ? "AM" : "PM"}`
 }
 
+export function getHourAndAmFromIndex(index) {
+  let am = true;
+  if (index >= 12) {
+    am = false;
+    index = mod(index, 12);
+  }
+  index = index == 0 ? 12 : index;
+  return [index, am];
+}
+
 export function hashDate(date) {
   return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
 }
