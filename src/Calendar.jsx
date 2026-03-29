@@ -35,11 +35,15 @@ async function getEvents(events, setEvents) {
   }
 }
 
-// Login dropdown component
+// Login dropdown component with New User option
 function AuthDropdown({ user, setUser }) {
   const [visible, setVisible] = useState(false) // Dropdown visibility
   const [email, setEmail] = useState('') // Email input
   const [password, setPassword] = useState('') // Password input
+
+  const [showNewUserPopup, setShowNewUserPopup] = useState(false) // Tracks new user form visibility
+  const [newUserEmail, setNewUserEmail] = useState('') // New user email input
+  const [newUserPassword, setNewUserPassword] = useState('') // New user password input
 
   // Sign in with email + password
   async function signIn() {
@@ -58,6 +62,21 @@ function AuthDropdown({ user, setUser }) {
   async function signOut() {
     await supabase.auth.signOut() // Supabase logout
     setUser(null) // Clear user from state
+  }
+
+  // Handle new user creation
+  async function handleNewUserSubmit() {
+    const { data, error } = await supabase.auth.signUp({
+      email: newUserEmail,
+      password: newUserPassword
+    });
+    if (error) alert(error.message)
+    else {
+      alert('User created! Please login.')
+      setShowNewUserPopup(false)
+      setNewUserEmail('')
+      setNewUserPassword('')
+    }
   }
 
   return (
@@ -81,7 +100,10 @@ function AuthDropdown({ user, setUser }) {
               </div>
             )}
           </div>
-        : <button onClick={() => setVisible(!visible)}>Login</button> // Show login if no user
+        : <div style={{ display: 'inline-block' }}>
+            <button onClick={() => setVisible(!visible)}>Login</button> {/* Show login if no user */}
+            <button style={{marginLeft: '6px'}} onClick={() => setShowNewUserPopup(true)}>New User</button> {/* New user button */}
+          </div>
       }
       {visible && !user && (
         <div style={{
@@ -108,6 +130,34 @@ function AuthDropdown({ user, setUser }) {
             style={{ display: 'block', marginBottom: '10px' }}
           />
           <button onClick={signIn}>Login</button>
+        </div>
+      )}
+      {showNewUserPopup && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          right: 0,
+          backgroundColor: 'white',
+          border: '1px solid #ccc',
+          padding: '10px',
+          zIndex: 1000
+        }}>
+          <input 
+            type="email" 
+            value={newUserEmail} 
+            onChange={e => setNewUserEmail(e.target.value)} 
+            placeholder="Email"
+            style={{ display: 'block', marginBottom: '10px' }}
+          />
+          <input 
+            type="password" 
+            value={newUserPassword} 
+            onChange={e => setNewUserPassword(e.target.value)} 
+            placeholder="Password"
+            style={{ display: 'block', marginBottom: '10px' }}
+          />
+          <button onClick={handleNewUserSubmit}>Create User</button>
+          <button style={{marginLeft:'6px'}} onClick={()=>setShowNewUserPopup(false)}>Cancel</button>
         </div>
       )}
     </div>
