@@ -6,6 +6,7 @@ import { supabase } from './supabase';
 import { addEvents } from './Event';
 import { getHourAndAmFromIndex } from './Util';
 
+// Fetch events from Supabase and add to state
 async function getEvents(events, setEvents) {
   try {
     const { data, error } = await supabase // Destructure the Supabase call
@@ -34,6 +35,85 @@ async function getEvents(events, setEvents) {
   }
 }
 
+// Login dropdown component
+function AuthDropdown({ user, setUser }) {
+  const [visible, setVisible] = useState(false) // Dropdown visibility
+  const [email, setEmail] = useState('') // Email input
+  const [password, setPassword] = useState('') // Password input
+
+  // Sign in with email + password
+  async function signIn() {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    if (error) alert(error.message) // Alert error if login fails
+    else {
+      setUser(data.user) // Save logged-in user
+      setVisible(false) // Close dropdown after login
+    }
+  }
+
+  // Sign out user
+  async function signOut() {
+    await supabase.auth.signOut() // Supabase logout
+    setUser(null) // Clear user from state
+  }
+
+  return (
+    <div style={{ position: 'absolute', top: 10, right: 10 }}>
+      {user
+        ? <div style={{ position: 'relative' }}>
+            <button onClick={() => setVisible(!visible)}>
+              {user.email} {/* Show logged-in user */}
+            </button>
+            {visible && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                backgroundColor: 'white',
+                border: '1px solid #ccc',
+                padding: '10px',
+                zIndex: 1000
+              }}>
+                <button onClick={signOut}>Logout</button> {/* Logout button */}
+              </div>
+            )}
+          </div>
+        : <button onClick={() => setVisible(!visible)}>Login</button> // Show login if no user
+      }
+      {visible && !user && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          right: 0,
+          backgroundColor: 'white',
+          border: '1px solid #ccc',
+          padding: '10px',
+          zIndex: 1000
+        }}>
+          <input 
+            type="email" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            placeholder="Email"
+            style={{ display: 'block', marginBottom: '10px' }}
+          />
+          <input 
+            type="password" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+            placeholder="Password"
+            style={{ display: 'block', marginBottom: '10px' }}
+          />
+          <button onClick={signIn}>Login</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Calendar() {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(View.MONTH);
@@ -50,10 +130,19 @@ function Calendar() {
       id: crypto.randomUUID(),
     }]
   })
-  useEffect(() => {
-      getEvents(events, setEvents); // The function we just created
-    }, []); // "[]" signifies that this hook will only be run on the first page load
+  const [user, setUser] = useState(null) // Store logged-in user
 
+  // On mount, get user from Supabase
+  useEffect(() => {
+    supabase.auth.getUser().then(res => setUser(res.data.user))
+  }, [])
+
+  // Fetch events once user is logged in
+  useEffect(() => {
+    if (user) getEvents(events, setEvents); // The function we just created
+  }, [user]) // Dependency on user
+
+  // Handle month grid cell click
   function monthCellClick(day, active) {
     if (active) {
       return () => {
@@ -73,11 +162,11 @@ function Calendar() {
   }
 
   return (
-    <div className="calendar">
-      {
-        view == View.MONTH
-          ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
-          : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
+    <div className="calendar" style={{ position: 'relative' }}>
+      <AuthDropdown user={user} setUser={setUser}/> {/* Login/logout dropdown */}
+      {view == View.MONTH
+        ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
+        : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
             backClick={() => {setView(View.MONTH)}}/>
       }
     </div>
