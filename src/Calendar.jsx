@@ -22,15 +22,18 @@ async function getEvents(events, setEvents) {
         let createdAt = obj.created_at;
         let id = obj.id;
         let hourAndAm = getHourAndAmFromIndex(deadline.getHours());
-        console.log(obj);
-        console.log(username);
-        console.log(taskName);
-        addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
-          taskName, deadline, events, setEvents);
+        // console.log(obj);
+        // console.log(username);
+        // console.log(taskName);
+        let exists = Object.values(events).some((day) => day.some((e) => e.dbId === id));
+        if(!exists){
+          addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
+            taskName, deadline, events, setEvents, id);
+        }
       }
     }
   } catch (error) {
-    alert(error); // If an error is caught, alert it on the client
+    console.log(error); // If an error is caught, alert it on the client
   }
 }
 
@@ -41,13 +44,15 @@ function Calendar() {
     "2026-3-19": [{
       hourIndex: 12,
       minutes: 0,
-      name: "steel ball run",
+      name: "hi",
       id: crypto.randomUUID(),
+      identifier: 1
     },{
       hourIndex: 12,
       minutes: 30,
-      name: "other event",
+      name: "sbr",
       id: crypto.randomUUID(),
+      identifier: 2
     }]
   })
   useEffect(() => {

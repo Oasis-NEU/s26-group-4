@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 
-function newEvent(hourIndex, minutes, name) {
-  return {hourIndex: hourIndex, minutes: minutes, name: name, id: crypto.randomUUID()}
+function newEvent(hourIndex, minutes, name, dbId = null) {
+  return {hourIndex: hourIndex, minutes: minutes, name: name, id: crypto.randomUUID(), dbId: dbId}
 }
 
 function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWeekdays) {
@@ -27,7 +27,7 @@ function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWee
   return recurringDates;
 }
 
-export function addEvents(day, hour, minutes, am, name, date, events, setEvents, recurringEnabled, occurrences, selectedWeekdays) {
+export function addEvents(day, hour, minutes, am, name, date, events, setEvents, dbId, recurringEnabled, occurrences, selectedWeekdays) {
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
   let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
   let recurringDates = getRecurringDates(eventDate, recurringEnabled, occurrences, selectedWeekdays);
@@ -35,7 +35,7 @@ export function addEvents(day, hour, minutes, am, name, date, events, setEvents,
   Object.assign(newEvents, events)
 
   recurringDates.forEach((recurrenceDate) => {
-    let event = newEvent(hourIndex, parseInt(minutes), name);
+    let event = newEvent(hourIndex, parseInt(minutes), name, dbId);
     let hashed = hashDate(recurrenceDate)
     if (newEvents[hashed] == null) {
       newEvents[hashed] = [event]
@@ -91,6 +91,7 @@ function EventAdder(props) {
       date,
       events,
       setEvents,
+      null,
       isRecurring,
       Math.max(1, parseInt(occurrences) || 1),
       repeatDays,
@@ -115,7 +116,7 @@ function EventAdder(props) {
   return (
     <div className="eventAdder">
       <form onSubmit={onSubmit}>
-        <label for="day">Due Date: </label>
+        <label htmlFor="day">Due Date: </label>
         <select className={"font"} name="day" value={selectedDay} onChange={(event) => setSelectedDay(event.target.value)}>
           {Array.from(Array(validDays.length)).map((_, index) => (
             <option key={index} value={`${validDays[index].getDate()}`}>

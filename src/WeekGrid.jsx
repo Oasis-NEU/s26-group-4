@@ -99,7 +99,7 @@ function WeekGrid(props) {
       <button onClick={() => {
         setDate(incrementWeek(date));
       }}>&gt;</button>
-      <table class="weekGrid">
+      <table className="weekGrid">
         <colgroup>
           <col span="1" style={{width: '5%'}}/>
         </colgroup>
