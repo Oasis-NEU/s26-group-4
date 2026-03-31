@@ -6,12 +6,11 @@ A planning app that serves to organize your tasks and motivate you to complete t
 > find a use for points, maybe like a tomodachi?
 
 # [Current Goals](https://docs.google.com/document/d/1t2-sQqBEpqxY3DYcKP9moxW6HfZuPBx6kjiiVyEtGU4/edit?tab=t.0)
-- Make it look pretty (big)
-- Add event adding feature
-- Update tab icon
-- Add year view
-- Task start time within hour
-- 
+- Improve backend support
+- Improve authentication
+- Add task completion
+- Add exp bar for completing task
+- Add website skins for levelling up exp
 
 # Completed Goals
 > move completed goals here instead of deleting (maybe strikethrough as well?)
@@ -21,3 +20,11 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Added month offset 
 - Greyed out days from future and past months
 - Refactored code
+- Make it look pretty (big)
+- Add event adding feature
+- Update tab icon
+- Add year view
+- Task start time within hour
+- Added year selection 
+- Added basic backend support
+- Added basic authentication

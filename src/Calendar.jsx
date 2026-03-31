@@ -8,6 +8,7 @@ import { getHourAndAmFromIndex } from './Util';
 
 // Fetch events from Supabase and add to state
 async function getEvents(events, setEvents) {
+  // console.log("get events")
   try {
     const { data, error } = await supabase // Destructure the Supabase call
           .from("tasks") // From the "Groceries" table
@@ -23,15 +24,18 @@ async function getEvents(events, setEvents) {
         let createdAt = obj.created_at;
         let id = obj.id;
         let hourAndAm = getHourAndAmFromIndex(deadline.getHours());
-        console.log(obj);
-        console.log(username);
-        console.log(taskName);
-        addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
-          taskName, deadline, events, setEvents);
+        // console.log(obj);
+        // console.log(username);
+        // console.log(taskName);
+        let exists = Object.values(events).some((day) => day.some((e) => e.dbId === id));
+        if(!exists){
+          addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
+            taskName, deadline, events, setEvents, id);
+        }
       }
     }
   } catch (error) {
-    alert(error); // If an error is caught, alert it on the client
+    console.log(error); // If an error is caught, alert it on the client
   }
 }
 
@@ -168,19 +172,25 @@ function Calendar() {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(View.MONTH);
   const [events, setEvents] = useState({
-    "2026-3-19": [{
-      hourIndex: 12,
-      minutes: 0,
-      name: "steel ball run",
-      id: crypto.randomUUID(),
-    },{
-      hourIndex: 12,
-      minutes: 30,
-      name: "other event",
-      id: crypto.randomUUID(),
-    }]
+    // old, hard coded events; going to keep just in case we need
+    // "2026-3-19": [{
+    //   hourIndex: 12,
+    //   minutes: 0,
+    //   name: "hi",
+    //   id: crypto.randomUUID(),
+    //   identifier: 1
+    // },{
+    //   hourIndex: 12,
+    //   minutes: 30,
+    //   name: "sbr",
+    //   id: crypto.randomUUID(),
+    //   identifier: 2
+    // }]
   })
   const [user, setUser] = useState(null) // Store logged-in user
+  useEffect(() => {
+      getEvents(events, setEvents); // The function we just created
+    }, [events]); // "[]" signifies that this hook will only be run on the first page load
 
   // On mount, get user from Supabase
   useEffect(() => {
