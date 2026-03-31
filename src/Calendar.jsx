@@ -7,6 +7,7 @@ import { addEvents } from './Event';
 import { getHourAndAmFromIndex } from './Util';
 
 async function getEvents(events, setEvents) {
+  // console.log("get events")
   try {
     const { data, error } = await supabase // Destructure the Supabase call
           .from("tasks") // From the "Groceries" table
@@ -41,23 +42,24 @@ function Calendar() {
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState(View.MONTH);
   const [events, setEvents] = useState({
-    "2026-3-19": [{
-      hourIndex: 12,
-      minutes: 0,
-      name: "hi",
-      id: crypto.randomUUID(),
-      identifier: 1
-    },{
-      hourIndex: 12,
-      minutes: 30,
-      name: "sbr",
-      id: crypto.randomUUID(),
-      identifier: 2
-    }]
+    // old, hard coded events; going to keep just in case we need
+    // "2026-3-19": [{
+    //   hourIndex: 12,
+    //   minutes: 0,
+    //   name: "hi",
+    //   id: crypto.randomUUID(),
+    //   identifier: 1
+    // },{
+    //   hourIndex: 12,
+    //   minutes: 30,
+    //   name: "sbr",
+    //   id: crypto.randomUUID(),
+    //   identifier: 2
+    // }]
   })
   useEffect(() => {
       getEvents(events, setEvents); // The function we just created
-    }, []); // "[]" signifies that this hook will only be run on the first page load
+    }, [events]); // "[]" signifies that this hook will only be run on the first page load
 
   function monthCellClick(day, active) {
     if (active) {
