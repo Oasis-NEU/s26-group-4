@@ -7,12 +7,14 @@ import { addEvents } from './Event';
 import { getHourAndAmFromIndex } from './Util';
 
 // Fetch events from Supabase and add to state
-async function getEvents(events, setEvents) {
+async function getEvents(events, setEvents, user) {
   // console.log("get events")
   try {
+    if(!user){ return }
     const { data, error } = await supabase // Destructure the Supabase call
           .from("tasks") // From the "Groceries" table
-          .select("*"); // Select (fetch) everything
+          .select("*") // Select (fetch) everything
+          .eq("user_id", user.id); 
     if (error) throw error; // If there is an error, throw it
     if (data != null) { // If there is data fetched
       // setGroceries(data); // Set our groceries state variable to the data
@@ -20,7 +22,7 @@ async function getEvents(events, setEvents) {
         let obj = data[i];
         let deadline = new Date(obj.deadline);
         let taskName = obj.task_name;
-        let username = obj.username;
+        let userid = obj.userid;
         let createdAt = obj.created_at;
         let id = obj.id;
         let hourAndAm = getHourAndAmFromIndex(deadline.getHours());
@@ -30,7 +32,7 @@ async function getEvents(events, setEvents) {
         let exists = Object.values(events).some((day) => day.some((e) => e.dbId === id));
         if(!exists){
           addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
-            taskName, deadline, events, setEvents, id);
+            taskName, deadline, events, setEvents, id, userid);
         }
       }
     }
@@ -188,9 +190,9 @@ function Calendar() {
     // }]
   })
   const [user, setUser] = useState(null) // Store logged-in user
-  useEffect(() => {
-      getEvents(events, setEvents); // The function we just created
-    }, [events]); // "[]" signifies that this hook will only be run on the first page load
+  // useEffect(() => {
+  //     getEvents(events, setEvents); // The function we just created
+  //   }, [events]); // "[]" signifies that this hook will only be run on the first page load
 
   // On mount, get user from Supabase
   useEffect(() => {
@@ -199,7 +201,7 @@ function Calendar() {
 
   // Fetch events once user is logged in
   useEffect(() => {
-    if (user) getEvents(events, setEvents); // The function we just created
+    if (user) getEvents(events, setEvents, user); // The function we just created
   }, [user]) // Dependency on user
 
   // Handle month grid cell click

@@ -11,6 +11,9 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Add task completion
 - Add exp bar for completing task
 - Add website skins for levelling up exp
+- Refactor
+- Tasks for canvas type side bar
+- Hover day in month view to see tasks for that day
 
 # Completed Goals
 > move completed goals here instead of deleting (maybe strikethrough as well?)
