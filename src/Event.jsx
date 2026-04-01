@@ -16,13 +16,14 @@ function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWee
     ? selectedWeekdays
     : [startDate.getDay()];
 
-  let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-  while (recurringDates.length < occurrences) {
-    if (validWeekdays.includes(cursor.getDay())) {
-      recurringDates.push(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
-    }
-    cursor.setDate(cursor.getDate() + 1);
-  }
+  for (let week = 0; week < occurrences; week++) {
+  validWeekdays.forEach((weekday) => {
+    // Calculate the date for this weekday in this week
+    let diff = (weekday - startDate.getDay() + 7) % 7; // days until this weekday
+    let eventDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + diff + week * 7);
+    recurringDates.push(eventDate);
+  });
+}
 
   return recurringDates;
 }
