@@ -6,7 +6,6 @@ A planning app that serves to organize your tasks and motivate you to complete t
 > find a use for points, maybe like a tomodachi?
 
 # [Current Goals](https://docs.google.com/document/d/1t2-sQqBEpqxY3DYcKP9moxW6HfZuPBx6kjiiVyEtGU4/edit?tab=t.0)
-- Improve backend support
 - Improve authentication
 - Add task completion
 - Add exp bar for completing task
@@ -14,6 +13,8 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Refactor
 - Tasks for canvas type side bar
 - Hover day in month view to see tasks for that day
+- Improve user task syncing (re-render page on log in/log out)
+- Improve user task syncing (make it so adding tasks will get assigned to a user)
 
 # Completed Goals
 > move completed goals here instead of deleting (maybe strikethrough as well?)
@@ -31,3 +32,4 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Added year selection 
 - Added basic backend support
 - Added basic authentication
+- Added user task syncing (basic)
