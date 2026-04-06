@@ -7,7 +7,7 @@ import { addEvents } from './Event';
 import { getHourAndAmFromIndex } from './Util';
 
 // Fetch events from Supabase and add to state
-async function getEvents(events, setEvents, user) {
+export async function getEvents(events, setEvents, user) {
   // console.log("get events")
   try {
     if(!user){ return }
@@ -22,19 +22,22 @@ async function getEvents(events, setEvents, user) {
         let obj = data[i];
         let deadline = new Date(obj.deadline);
         let taskName = obj.task_name;
-        let userid = obj.userid;
+        let user_id = obj.user_id;
         let createdAt = obj.created_at;
         let id = obj.id;
         let hourAndAm = getHourAndAmFromIndex(deadline.getHours());
         // console.log(obj);
+        // console.log(user_id);
         // console.log(username);
         // console.log(taskName);
         let exists = Object.values(events).some((day) => day.some((e) => e.dbId === id));
+        console.log(exists)
         if(!exists){
           addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
-            taskName, deadline, events, setEvents, id, userid);
+            taskName, deadline.getMonth(), deadline.getFullYear(), events, setEvents, id, user_id);
         }
       }
+      console.log(events)
     }
   } catch (error) {
     console.log(error); // If an error is caught, alert it on the client
@@ -203,7 +206,10 @@ function Calendar() {
   // Fetch events once user is logged in
   useEffect(() => {
     if (user) getEvents(events, setEvents, user); // The function we just created
-  }, [user]) // Dependency on user
+  }, [user, events]) // calls when user or events is updated
+  // (add events hard coded only adds one at a time, the last one in for loop)
+  // (events does not accumulate, set events does not apply until after entire loop)
+  // (must call get events multiple times)
 
   // Handle month grid cell click
   function monthCellClick(day, active) {
@@ -230,7 +236,7 @@ function Calendar() {
       {view == View.MONTH
         ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
         : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
-            backClick={() => {setView(View.MONTH)}}/>
+            backClick={() => {setView(View.MONTH)}} user={user}/>
       }
     </div>
   )

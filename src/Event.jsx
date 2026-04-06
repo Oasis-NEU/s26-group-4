@@ -1,9 +1,42 @@
 import { useEffect, useState } from 'react';
 import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
+import { supabase } from './supabase'
+import { getEvents } from './Calendar.jsx'
 
-function newEvent(hourIndex, minutes, name, dbId = null, userId) {
-  return {hourIndex: hourIndex, minutes: minutes, name: name, id: crypto.randomUUID(), dbId: dbId, userId: userId}
+async function saveEvent(event, date) {
+  console.log("saving")
+  console.log(event)
+  if (event.userId == null) { return }
+  let entry = {
+    task_name: event.name,
+    deadline: new Date(date.getFullYear(), date.getMonth(), date.getDate(),
+      event.hourIndex, event.minutes),
+    user_id: event.userId
+  }
+  try {
+    const { data, error } = await supabase // Destructuring our Supabase call
+      .from("tasks") // Get our "Groceries" table
+      .insert(entry) // Insert passed in name and price
+      .single(); // Only insert it once
+    if (error) throw error; // If there is an error, throw it
+    // window.location.reload(); // Load the window once complete
+    getEvents()
+  } catch (error) {
+    alert(error); // If an error is caught, alert it on screen
+  }
+}
+
+function newEvent(hourIndex, minutes, name, dbId = null, userId, save, date) {
+  let event = {hourIndex: hourIndex, minutes: minutes, name: name,
+    dbId: dbId, userId: userId}
+  console.log(event)
+  console.log(save)
+  console.log(date)
+  if (save) {
+    saveEvent(event, date)
+  }
+  return event
 }
 
 function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWeekdays) {
@@ -28,17 +61,18 @@ function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWee
   return recurringDates;
 }
 
-export function addEvents(day, hour, minutes, am, name, date, events, setEvents, dbId, userId, recurringEnabled, occurrences, selectedWeekdays) {
+export function addEvents(day, hour, minutes, am, name, monthIndex, year, events, setEvents,
+  dbId, userId, save, recurringEnabled, occurrences, selectedWeekdays) {
   // console.log("add events")
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
-  let eventDate = new Date(date.getFullYear(), date.getMonth(), day)
+  let eventDate = new Date(year, monthIndex, day)
   let recurringDates = getRecurringDates(eventDate, recurringEnabled, occurrences, selectedWeekdays);
   let newEvents = {}
   Object.assign(newEvents, events)
-  // console.log(events)
+  console.log(events)
 
   recurringDates.forEach((recurrenceDate) => {
-    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId);
+    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId, save, recurrenceDate);
     // console.log(event)
     let hashed = hashDate(recurrenceDate)
     // console.log(hashed)
@@ -60,7 +94,7 @@ export function addEvents(day, hour, minutes, am, name, date, events, setEvents,
     // console.log(newEvents)
   });
 
-  // console.log(newEvents)
+  console.log(newEvents)
   setEvents(newEvents);
 }
 
@@ -69,6 +103,7 @@ function EventAdder(props) {
   const setDate = props.setDate;
   const events = props.events;
   const setEvents = props.setEvents;
+  const user = props.user;
   
   const validDays = [];
   for (let i = 0; i < 7; i++) {
@@ -102,11 +137,13 @@ function EventAdder(props) {
       selectedMinutes,
       selectedAm,
       name,
-      date,
+      date.getMonth(),
+      date.getFullYear(),
       events,
       setEvents,
       null,
-      null,
+      user.id,
+      true,
       isRecurring,
       Math.max(1, parseInt(occurrences) || 1),
       repeatDays,

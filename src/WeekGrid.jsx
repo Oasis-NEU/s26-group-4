@@ -77,6 +77,7 @@ function WeekGrid(props) {
   const events = props.events;
   const setEvents = props.setEvents;
   const backClick = props.backClick;
+  const user = props.user;
 
   const month = date.getMonth();
   const year = date.getFullYear();
@@ -150,7 +151,7 @@ function WeekGrid(props) {
           </tr>
         ))}
       </table>
-      <EventAdder date={date} setDate={setDate} events={events} setEvents={setEvents}/>
+      <EventAdder date={date} setDate={setDate} events={events} setEvents={setEvents} user = {user}/>
     </div>
   )
 }
