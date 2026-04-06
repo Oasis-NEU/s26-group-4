@@ -228,7 +228,7 @@ function Calendar() {
     <div className="calendar" style={{ position: 'relative' }}>
       <AuthDropdown user={user} setUser={setUser} setEvents={setEvents}/> {/* Login/logout dropdown */}
       {view == View.MONTH
-        ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
+        ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick} events={events}/>
         : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
             backClick={() => {setView(View.MONTH)}}/>
       }

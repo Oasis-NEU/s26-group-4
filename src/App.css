@@ -5,6 +5,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  user-select: none;
 }
 
 .logo {
@@ -143,6 +144,66 @@ body{
 
 .button {
   width : 175px;
+}
+
+.event-dot {
+  display: block;
+  font-size: 0.5em;
+  line-height: 0;
+  color: #4a90d9;
+  margin-top: -2px;
+  width: 0px;
+  overflow: visible;
+}
+
+.month-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 8px 10px;
+  z-index: 100;
+  min-width: 160px;
+  max-width: 220px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  font-family: 'Josefin Sans';
+  pointer-events: none;
+}
+
+.month-tooltip-empty {
+  color: #999;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.month-tooltip-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+  border-bottom: 1px solid #3a3a3a;
+  font-size: 0.8rem;
+  color: #eee;
+}
+
+.month-tooltip-item:last-child {
+  border-bottom: none;
+}
+
+.month-tooltip-time {
+  white-space: nowrap;
+  color: #4a90d9;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.month-tooltip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .font{
