@@ -103,11 +103,7 @@ function AuthDropdown({ user, setUser, setEvents }) {
                 padding: '10px',
                 zIndex: 1000
               }}>
-<<<<<<< HEAD
-                <button onClick={()=>signOut(setEvents)}>Logout</button> {/* Logout button */}
-=======
                 <button onClick={() => signOut(setEvents)}>Logout</button> {/* Logout button */}
->>>>>>> mattsus
               </div>
             )}
           </div>
