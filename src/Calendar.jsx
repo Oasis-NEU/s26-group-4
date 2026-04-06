@@ -42,7 +42,7 @@ async function getEvents(events, setEvents, user) {
 }
 
 // Login dropdown component with New User option
-function AuthDropdown({ user, setUser }) {
+function AuthDropdown({ user, setUser, setEvents }) {
   const [visible, setVisible] = useState(false) // Dropdown visibility
   const [email, setEmail] = useState('') // Email input
   const [password, setPassword] = useState('') // Password input
@@ -65,9 +65,10 @@ function AuthDropdown({ user, setUser }) {
   }
 
   // Sign out user
-  async function signOut() {
+  async function signOut(setEvents) {
     await supabase.auth.signOut() // Supabase logout
     setUser(null) // Clear user from state
+    setEvents({})
   }
 
   // Handle new user creation
@@ -102,7 +103,7 @@ function AuthDropdown({ user, setUser }) {
                 padding: '10px',
                 zIndex: 1000
               }}>
-                <button onClick={signOut}>Logout</button> {/* Logout button */}
+                <button onClick={()=>signOut(setEvents)}>Logout</button> {/* Logout button */}
               </div>
             )}
           </div>
@@ -225,7 +226,7 @@ function Calendar() {
 
   return (
     <div className="calendar" style={{ position: 'relative' }}>
-      <AuthDropdown user={user} setUser={setUser}/> {/* Login/logout dropdown */}
+      <AuthDropdown user={user} setUser={setUser} setEvents={setEvents}/> {/* Login/logout dropdown */}
       {view == View.MONTH
         ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick}/>
         : <WeekGrid date={date} setDate={setDate} events={events} setEvents={setEvents}
