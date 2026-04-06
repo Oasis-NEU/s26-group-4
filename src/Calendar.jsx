@@ -90,7 +90,7 @@ function AuthDropdown({ user, setUser, setEvents }) {
     <div style={{ position: 'absolute', top: 10, right: 10 }}>
       {user
         ? <div style={{ position: 'relative' }}>
-            <button onClick={() => setVisible(!visible)}>
+            <button onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}>
               {user.email} {/* Show logged-in user */}
             </button>
             {visible && (
@@ -108,15 +108,15 @@ function AuthDropdown({ user, setUser, setEvents }) {
             )}
           </div>
         : <div style={{ display: 'inline-block' }}>
-            <button onClick={() => setVisible(!visible)}>Login</button> {/* Show login if no user */}
-            <button style={{marginLeft: '6px'}} onClick={() => setShowNewUserPopup(true)}>New User</button> {/* New user button */}
+            <button onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}>Login</button> {/* Show login if no user */}
+            <button style={{marginLeft: '6px'}} onClick={() => {setShowNewUserPopup(!showNewUserPopup); setVisible(false)}}>New User</button> {/* New user button */}
           </div>
       }
       {visible && !user && (
         <div style={{
           position: 'absolute',
           top: '100%',
-          right: 0,
+          right: 20,
           backgroundColor: 'white',
           border: '1px solid #ccc',
           padding: '10px',
@@ -143,7 +143,7 @@ function AuthDropdown({ user, setUser, setEvents }) {
         <div style={{
           position: 'absolute',
           top: '100%',
-          right: 0,
+          right: 20,
           backgroundColor: 'white',
           border: '1px solid #ccc',
           padding: '10px',
@@ -164,7 +164,6 @@ function AuthDropdown({ user, setUser, setEvents }) {
             style={{ display: 'block', marginBottom: '10px' }}
           />
           <button onClick={handleNewUserSubmit}>Create User</button>
-          <button style={{marginLeft:'6px'}} onClick={()=>setShowNewUserPopup(false)}>Cancel</button>
         </div>
       )}
     </div>

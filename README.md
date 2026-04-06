@@ -8,7 +8,6 @@ A planning app that serves to organize your tasks and motivate you to complete t
 # [Current Goals](https://docs.google.com/document/d/1t2-sQqBEpqxY3DYcKP9moxW6HfZuPBx6kjiiVyEtGU4/edit?tab=t.0)
 - Improve readme stuff
 - Make presentation
-- Improve authentication buttons
 - Add task completion
 - Add exp bar for completing task
 - Add website skins for levelling up exp
@@ -35,3 +34,4 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Added user task syncing (basic)
 - Improve user task syncing (re-render page on log in/log out)
 - Hover day in month view to see tasks for that day
+- Improve authentication buttons

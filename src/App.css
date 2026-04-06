@@ -210,6 +210,10 @@ body{
   font-family: 'Josefin Sans';
 }
 
+input {
+  font-family: 'Josefin Sans';
+}
+
 .timePick {
   border: 1.5px solid white;
   background-color: black;
