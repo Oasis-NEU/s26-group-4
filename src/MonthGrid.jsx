@@ -107,10 +107,10 @@ function MonthCell(props){
   const [hovered, setHovered] = useState(false);
 
   return (
-    <Grid size={1} style={{ position: 'relative' }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}>
-      <Item className={active ? "active" : "inactive"} onClick={click(day, active)}>
+    <Grid size={1} style={{ position: 'relative' }}>
+      <Item className={active ? "active" : "inactive"} onClick={click(day, active)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}>
         {day}
         {events.length > 0 && <span className="event-dot">●</span>}
         {/* {events.length > 0 && <span className="event-dot">👹</span>} */}
