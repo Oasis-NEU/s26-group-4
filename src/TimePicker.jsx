@@ -42,9 +42,6 @@ function WheelColumn({date, items, selectedIndex, onChange, label }) {
   // ============================================================
   // Helper: clamp an offset to valid bounds (hard stop at edges).
   // Used everywhere we update offset to prevent overscroll.
-  // [FIX #1] — This is the key fix. Instead of only clamping at
-  // snap time, we clamp during drag and momentum too, so the user
-  // never sees empty space beyond the first/last item.
   // ============================================================
   const clampOffset = useCallback((off) => {
     const max = 0;
@@ -299,11 +296,6 @@ function WheelColumn({date, items, selectedIndex, onChange, label }) {
           }}
         >
           {items.map((item, i) => {
-            // [BUGFIX] Removed the old `+ (PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2)` term.
-            // That was adding an 80px offset that pushed everything down by 2 items.
-            // Your `- 80` hack was compensating for it — now neither is needed.
-            // The correct formula is simply: position in list + scroll offset.
-            // When item i is selected (offset = -i * ITEM_HEIGHT), displacement = 0 → centered.
             const displacement = i * ITEM_HEIGHT + offset;
 
             const normalizedDisplacement = displacement / (PICKER_HEIGHT / 2);

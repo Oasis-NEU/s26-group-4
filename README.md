@@ -12,8 +12,7 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Add exp bar for completing task
 - Add website skins for levelling up exp
 - Tasks for canvas type side bar
-- Improve user task syncing (make it so adding tasks will get assigned to a user)
-- Fix formatting for time picker (offset rn)
+- For user tasks, fix overriding tasks 
 
 # Completed Goals
 > move completed goals here instead of deleting (maybe strikethrough as well?)
@@ -35,3 +34,6 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Improve user task syncing (re-render page on log in/log out)
 - Hover day in month view to see tasks for that day
 - Improve authentication buttons
+- Fix formatting for time picker (offset rn)
+- Improve user task syncing (make it so adding tasks will get assigned to a user)
+- For user tasks, fix not being able to add tasks when user id is null
