@@ -142,7 +142,7 @@ function EventAdder(props) {
       events,
       setEvents,
       null,
-      user.id,
+      user ? user.id : null,
       true,
       isRecurring,
       Math.max(1, parseInt(occurrences) || 1),
