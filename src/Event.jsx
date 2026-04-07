@@ -4,15 +4,45 @@ import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 import { supabase } from './supabase'
 import { getEvents } from './Calendar.jsx'
 
-async function saveEvent(event, date) {
+export async function setCompletion(event, completion, events, setEvents, user) {
+  let newEvent = {}
+  Object.assign(newEvent, event);
+  newEvent.completion = completion;
+  updateEvent(newEvent, {completion: completion}, events, setEvents, user ? true : false)
+}
+
+export async function updateEvent(event, properties, events, setEvents, save) {
+  console.log(event)
+  let hashed = hashDate(event.deadline);
+  let today = events[hashed];
+  let filtered = today.filter((e) => e.dbId != event.dbId)
+  filtered.push(event)
+  let newEvents = { ...events, [hashed]: filtered };
+  setEvents(newEvents);
+  getEvents();
+  if (save) {
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(properties)
+        .eq("id", event.dbId);
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+async function saveEvent(event) {
   console.log("saving")
   console.log(event)
   if (event.userId == null) { return }
   let entry = {
     task_name: event.name,
-    deadline: new Date(date.getFullYear(), date.getMonth(), date.getDate(),
-      event.hourIndex, event.minutes),
-    user_id: event.userId
+    deadline: event.deadline,
+    user_id: event.userId,
+    completion: event.completion
   }
   try {
     const { data, error } = await supabase // Destructuring our Supabase call
@@ -27,14 +57,15 @@ async function saveEvent(event, date) {
   }
 }
 
-function newEvent(hourIndex, minutes, name, dbId = null, userId, save, date) {
+function newEvent(hourIndex, minutes, name, dbId = null, userId, save, date, completion = false) {
   let event = {hourIndex: hourIndex, minutes: minutes, name: name,
-    dbId: dbId, userId: userId}
-  console.log(event)
-  console.log(save)
-  console.log(date)
+    dbId: userId ? dbId : crypto.randomUUID(), userId: userId, completion: completion,
+    deadline: new Date(date.getFullYear(), date.getMonth(), date.getDate(), hourIndex, minutes)}
+  // console.log(event)
+  // console.log(save)
+  // console.log(date)
   if (save) {
-    saveEvent(event, date)
+    saveEvent(event)
   }
   return event
 }
@@ -62,7 +93,7 @@ function getRecurringDates(startDate, recurringEnabled, occurrences, selectedWee
 }
 
 export function addEvents(day, hour, minutes, am, name, monthIndex, year, events, setEvents,
-  dbId, userId, save, recurringEnabled, occurrences, selectedWeekdays) {
+  dbId, userId, completion = false, save, recurringEnabled, occurrences, selectedWeekdays) {
   // console.log("add events")
   let hourIndex = (hour == "12" ? 0 : parseInt(hour)) + (am == "AM" ? 0 : 12);
   let eventDate = new Date(year, monthIndex, day)
@@ -72,7 +103,7 @@ export function addEvents(day, hour, minutes, am, name, monthIndex, year, events
   console.log(events)
 
   recurringDates.forEach((recurrenceDate) => {
-    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId, save, recurrenceDate);
+    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId, save, recurrenceDate, completion);
     // console.log(event)
     let hashed = hashDate(recurrenceDate)
     // console.log(hashed)
@@ -143,6 +174,7 @@ function EventAdder(props) {
       setEvents,
       null,
       user ? user.id : null,
+      false,
       true,
       isRecurring,
       Math.max(1, parseInt(occurrences) || 1),

@@ -3,7 +3,7 @@ import MonthGrid from './MonthGrid';
 import { incrementMonth, decrementMonth } from './MonthGrid'
 import WeekGrid from './WeekGrid';
 import { supabase } from './supabase';
-import { addEvents } from './Event';
+import { addEvents, setCompletion } from './Event';
 import { getHourAndAmFromIndex } from './Util';
 
 // Fetch events from Supabase and add to state
@@ -30,11 +30,13 @@ export async function getEvents(events, setEvents, user) {
         // console.log(user_id);
         // console.log(username);
         // console.log(taskName);
+        let completion = obj.completion;
         let exists = Object.values(events).some((day) => day.some((e) => e.dbId === id));
         console.log(exists)
         if(!exists){
           addEvents(deadline.getDate(), hourAndAm[0], deadline.getMinutes(), hourAndAm[1] ? "AM" : "PM",
-            taskName, deadline.getMonth(), deadline.getFullYear(), events, setEvents, id, user_id);
+            taskName, deadline.getMonth(), deadline.getFullYear(), events, setEvents, id, user_id, completion,
+            false, false, 1, []);
         }
       }
       console.log(events)
@@ -64,6 +66,7 @@ function AuthDropdown({ user, setUser, setEvents }) {
     else {
       setUser(data.user) // Save logged-in user
       setVisible(false) // Close dropdown after login
+      setEvents({})
     }
   }
 

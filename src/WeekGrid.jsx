@@ -1,4 +1,4 @@
-import EventAdder from "./Event";
+import EventAdder, { setCompletion } from "./Event";
 import { getDayName, getHourName, getMonthName, getDaysInMonth, getMonthOffset, mod, isLeapYear, hashDate } from './Util.jsx'
 
 export function getDayByIndex(date, index) {
@@ -127,23 +127,24 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" style={{top: `${getTopOffset(event)}%`,
+                    return (<div className="task" onClick={() => setCompletion(event, !event.completion, events, setEvents, user)} style={{top: `${getTopOffset(event)}%`,
                     backgroundColor: hashNameToColor(event.name),
                     left: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
-                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
-                        (e) => e.id == event.id)
+                      (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).findIndex(
+                        (e) => e.dbId == event.dbId)
                       / getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
-                        (group) => group.findIndex((e) => e.id == event.id) != -1).length * 100}%`,
+                        (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).length * 100}%`,
                     width: `${100 - getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
-                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
-                        (e) => e.id == event.id)
+                      (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).findIndex(
+                        (e) => e.dbId == event.dbId)
                       / getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
-                        (group) => group.findIndex((e) => e.id == event.id) != -1).length * 100}%`,
+                        (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).length * 100}%`,
                     zIndex: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
-                      (group) => group.findIndex((e) => e.id == event.id) != -1).findIndex(
-                        (e) => e.id == event.id)}`,
+                      (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).findIndex(
+                        (e) => e.dbId == event.dbId)}`,
                     }}>
-                      {truncateTaskName(event.name, getDateString(event))}</div>);
+                      <span style={event.completion ? {textDecoration: "line-through"} : {}}>
+                        {truncateTaskName(event.name, getDateString(event))}</span></div>);
                   })
                 }
               </td>

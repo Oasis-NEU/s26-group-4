@@ -125,7 +125,7 @@ function MonthCell(props){
                 .map((event) => (
                   <div key={event.id} className="month-tooltip-item">
                     <span className="month-tooltip-time">{getDateString(event)}</span>
-                    <span className="month-tooltip-name">{event.name}</span>
+                    <span className="month-tooltip-name" style={event.completion ? {textDecoration: "line-through"} : {}}>{event.name}</span>
                   </div>
                 ))
           }
