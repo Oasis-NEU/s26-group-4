@@ -127,7 +127,8 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" onClick={() => setCompletion(event, !event.completion, events, setEvents, user)} style={{top: `${getTopOffset(event)}%`,
+                    return (<div className="task" onClick={() => setCompletion(event, !event.completion, events, setEvents, user)}
+                    style={{top: `${getTopOffset(event)}%`,
                     backgroundColor: hashNameToColor(event.name),
                     left: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
                       (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).findIndex(
@@ -174,6 +175,7 @@ function getEventsByHour(events, date, hourIndex) {
       filtered.push(copy);
     }
   }
+  filtered = filtered.sort((a, b) => a.dbId - b.dbId);
   return filtered;
   // return events[hashDate(date)].filter((event) => {
   //   event.startHourIndex == hourIndex;
@@ -219,6 +221,7 @@ function getEventCollisions(events, date) {
     let copy = {};
     Object.assign(copy, todayEvents[i]);
     collisionGroup.push(copy);
+    collisionGroup.sort((a, b) => a.dbId - b.dbId);
     filtered.push(collisionGroup);
   }
   // console.log(filtered);
