@@ -53,7 +53,7 @@ function MonthGrid(props) {
       }}>&gt;</button>
       </div>
       <TimePicker timeVisible={timeVisible} date={date} setDate={setDate}/>
-      <Grid container spacing={.5} columns={7}>
+      <Grid container spacing={.5} columns={7} sx={{ mt: 1.5 }}>
         {Array.from(Array(42)).map((_, index) => {
           if (index >= currentMonthOffset) {
             const day = mod((index-currentMonthOffset), currentMonthDays) + 1;
