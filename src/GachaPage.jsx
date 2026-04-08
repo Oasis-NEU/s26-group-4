@@ -7,18 +7,16 @@ import {
 } from './Profile';
 
 const DRAW_COUNT = 5;
-// Rarities hidden as mystery until unlocked
 const MYSTERY_RARITIES = new Set(['epic', 'legendary']);
-// Reverse-biased weights for the 1x cycling animation (epic/legendary hover more = hype)
 const CYCLE_WEIGHTS = { common: 2, rare: 10, epic: 30, legendary: 55 };
 
 function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, setProfilePic, pullCount, setPullCount, emojiFlood, setEmojiFlood, emojiFloodRevealed, setEmojiFloodRevealed }) {
   const [rolling, setRolling]         = useState(false);
   const [results, setResults]         = useState([]);
-  const [highlighted, setHighlighted] = useState(null); // 1x cycling highlight
-  const [revealId, setRevealId]       = useState(null); // 1x final reveal
-  const [slotAnim, setSlotAnim]       = useState(null); // 5x: [{pic, settled}] | null
+  const [highlighted, setHighlighted] = useState(null);
+  const [slotAnim, setSlotAnim]       = useState(null);
   const [xpMsg, setXpMsg]             = useState(false);
+  const [stripPhase, setStripPhase]   = useState(0); // 1x reveal: 0=?? 1=color 2=pic
 
   function draw(count) {
     if (rolling || pics.length === 0) return;
@@ -32,92 +30,82 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
     setResults([]);
     setSlotAnim(null);
     setHighlighted(null);
-    setRevealId(null);
+    setStripPhase(0);
 
     let pc = pullCount;
     const drawn = [];
     for (let i = 0; i < count; i++) drawn.push(rollGacha(pics, pc++));
 
-    const randPic = () => pics[Math.floor(Math.random() * pics.length)];
+    const revealEmoji = ms => { if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), ms); };
 
-    // Reverse-biased pick for 1x cycling — legendary flashes as ? for tension
-    const cycleTotal = pics.reduce((s, p) => s + (CYCLE_WEIGHTS[p.rarity] ?? 2), 0);
+    // Weighted cycling: mystery cards (unowned epic/legendary) show most, then legendary, epic, rare, common
+    const localOwnedSet = new Set(owned);
+    const picWeights = pics.map(p =>
+      (!localOwnedSet.has(p.id) && MYSTERY_RARITIES.has(p.rarity))
+        ? (p.rarity === 'legendary' ? 90 : 50)
+        : CYCLE_WEIGHTS[p.rarity] ?? 2
+    );
+    const cycleTotal = picWeights.reduce((s, w) => s + w, 0);
     function randCyclePic() {
       let r = Math.random() * cycleTotal;
-      for (const p of pics) { r -= CYCLE_WEIGHTS[p.rarity] ?? 2; if (r <= 0) return p; }
+      for (let j = 0; j < pics.length; j++) { r -= picWeights[j]; if (r <= 0) return pics[j]; }
       return pics[pics.length - 1];
     }
 
     if (count === 1) {
       // ── Single draw: grid highlighting spin ──────────────────────────────
-      // All pics eligible — mystery cards flash briefly as a teaser preview
       let frame = 0;
-      const TOTAL_FRAMES = 48;
-
+      const TOTAL_FRAMES = 22;
       function step() {
-        const pic = randCyclePic();
-        setHighlighted(pic.id);
+        setHighlighted(randCyclePic().id);
         frame++;
         if (frame < TOTAL_FRAMES) {
-          // Exponential easing: starts ~30ms, ends ~3000ms
           const t = frame / TOTAL_FRAMES;
-          setTimeout(step, 30 * Math.pow(100, t));
+          setTimeout(step, 80 * Math.pow(12, t));
         } else {
-          // Land — reveal the result (bypasses mystery veil)
           setHighlighted(null);
-          setRevealId(drawn[0].id);
+          // Go straight to strip reveal: ?? (500ms) → color (500ms) → pic
           setTimeout(() => {
             setXp(prev => prev - drawCost);
             setOwned(prev => [...prev, drawn[0].id]);
             setPullCount(pc);
             setResults(drawn);
-            setRevealId(null);
             setRolling(false);
-            if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), 700);
-            setTimeout(() => setResults([]), 2500);
-          }, 2000);
+            setTimeout(() => setStripPhase(1), 500);
+            setTimeout(() => setStripPhase(2), 1000);
+            revealEmoji(1700);
+            setTimeout(() => setResults([]), 3500);
+          }, 1100);
         }
       }
       step();
 
     } else {
       // ── 5x draw: independent slot animation, gradually slowing ───────────
-      const CYCLING_MS = 3000; // full-speed phase duration
-      const SETTLE_GAP = 700;  // ms between each slot settling
-      const SLOW_LEAD  = 1100; // each slot starts slowing this many ms before it settles
+      const CYCLING_MS = 3000;
+      const SETTLE_GAP = 700;
+      const SLOW_LEAD  = 1100;
 
-      setSlotAnim(drawn.map(() => ({ pic: randPic(), settled: false })));
-
+      setSlotAnim(drawn.map(() => ({ pic: randCyclePic(), settled: false })));
       const startMs = Date.now();
 
-      // Recursive setTimeout per slot — delay increases as settle approaches
       function cycleSlot(idx) {
         const settleAt  = startMs + CYCLING_MS + idx * SETTLE_GAP;
         const remaining = settleAt - Date.now();
-
-        if (remaining <= 40) return; // settling timeout will handle the final frame
-
+        if (remaining <= 40) return;
         setSlotAnim(prev => {
           if (!prev || prev[idx]?.settled) return prev;
           const next = [...prev];
-          next[idx] = { pic: randPic(), settled: false };
+          next[idx] = { pic: randCyclePic(), settled: false };
           return next;
         });
-
-        let delay;
-        if (remaining > SLOW_LEAD) {
-          delay = 82 + idx * 4; // fast phase
-        } else {
-          const t = 1 - remaining / SLOW_LEAD; // 0 → 1 as time runs out
-          delay = 82 + idx * 4 + t * t * 320; // ease-in slowdown
-        }
-
+        const t = 1 - remaining / SLOW_LEAD;
+        const delay = remaining > SLOW_LEAD ? 140 + idx * 6 : 140 + idx * 6 + t * t * 320;
         setTimeout(() => cycleSlot(idx), delay);
       }
 
       drawn.forEach((_, idx) => cycleSlot(idx));
 
-      // Settle slots one by one after the fast cycling phase
       setTimeout(() => {
         drawn.forEach((drawnPic, idx) => {
           setTimeout(() => {
@@ -127,7 +115,6 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
               next[idx] = { pic: drawnPic, settled: true };
               return next;
             });
-
             if (idx === drawn.length - 1) {
               setTimeout(() => {
                 setXp(prev => prev - drawCost);
@@ -136,7 +123,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                 setResults(drawn);
                 setSlotAnim(null);
                 setRolling(false);
-                if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), 700);
+                revealEmoji(700);
                 setTimeout(() => setResults([]), 3000);
               }, 2000);
             }
@@ -146,8 +133,8 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
     }
   }
 
-  const uniqueOwned = new Set(owned.filter(id => pics.some(p => p.id === id))).size;
   const ownedSet    = new Set(owned);
+  const uniqueOwned = pics.filter(p => ownedSet.has(p.id)).length;
   const is1xResult  = !slotAnim && results.length === 1;
 
   return (
@@ -171,34 +158,23 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
 
       <div className="gacha-grid-wrap">
         {pics.length === 0 ? (
-          <div className="gacha-pool-empty">
-            <span>nothing yet</span>
-          </div>
+          <div className="gacha-pool-empty"><span>nothing yet</span></div>
         ) : (
           <div className="gacha-grid">
             {['legendary', 'epic', 'rare', 'common'].flatMap(rarity =>
               pics.filter(p => p.rarity === rarity).map(pic => {
-                const isOwned         = ownedSet.has(pic.id);
-                const isEquipped      = profilePic === pic.id;
-                const isHighlit       = highlighted === pic.id;
-                const isRevealing     = revealId === pic.id;
-                const isLockedMystery = !isOwned && MYSTERY_RARITIES.has(pic.rarity);
-
-                // Legendary locked: stays ? even when highlighted (tension, no reveal)
-                // Epic locked: lifts veil when highlighted (brief teaser)
-                const showMystery = isLockedMystery && !isRevealing &&
-                  (rarity === 'legendary' || !isHighlit);
-                // Owned always shows full color; highlights/reveals override everything
-                const showColor = isOwned || (isHighlit && !showMystery) || isRevealing;
-                // Locked non-mystery (common + rare) → faded B&W until owned
-                const spanFilter = showColor ? 'none' : 'grayscale(1) opacity(0.15)';
-
-                // Highlighted mystery still shows rarity border for tension
+                const isOwned     = ownedSet.has(pic.id);
+                const isEquipped  = profilePic === pic.id;
+                const isHighlit   = highlighted === pic.id;
+                const showMystery = !isOwned && MYSTERY_RARITIES.has(pic.rarity);
+                const showColor   = isOwned || (isHighlit && !showMystery);
+                const spanFilter  = showColor ? 'none' : 'grayscale(1) opacity(0.15)';
+                const rarityColor = (isOwned || isHighlit) ? RARITY_COLORS[rarity] : 'var(--g-card-border)';
                 const borderColor = (showMystery && !isHighlit)
                   ? 'var(--g-card-border)'
-                  : (rolling && !isHighlit && !isOwned && !isRevealing)
+                  : (rolling && !isHighlit && !isOwned)
                     ? 'var(--g-rolling-border)'
-                    : RARITY_COLORS[rarity];
+                    : rarityColor;
 
                 return (
                   <div
@@ -206,16 +182,15 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                     className={`gacha-card-wrap rarity-${rarity}${isOwned ? ' owned' : ''}${showMystery ? ' mystery' : ''}`}
                     onClick={() => isOwned && !rolling && setProfilePic(pic.id)}
                     title={
-                      showMystery ? '???' :
-                      !isOwned && rarity !== 'common' ? '???' :
+                      (showMystery || (!isOwned && rarity !== 'common')) ? '???' :
                       isEquipped ? pic.label :
                       isOwned ? `Equip ${pic.label}` :
-                      pic.label  // locked common shows its name
+                      pic.label
                     }
                   >
                     <div
-                      className={`gacha-card${isEquipped ? ' equipped' : ''}${(isHighlit || isRevealing) ? ' highlighted' : ''}${showMystery ? ' mystery' : ''}`}
-                      style={{ borderColor }}
+                      className={`gacha-card${isEquipped ? ' equipped' : ''}${isHighlit ? ' highlighted' : ''}${showMystery ? ' mystery' : ''}`}
+                      style={{ borderColor, backgroundColor: isHighlit ? rarityColor + '55' : undefined }}
                     >
                       {showMystery ? (
                         <span className="gacha-mystery-mark">?</span>
@@ -233,7 +208,6 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
           </div>
         )}
 
-        {/* Strip: slot animation during 5x, results after — click to dismiss */}
         {(slotAnim || results.length > 0) && (
           <div
             className="gacha-strip"
@@ -241,43 +215,37 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
             onClick={() => results.length > 0 && setResults([])}
           >
             {(slotAnim || results).map((item, i) => {
-              const pic     = slotAnim ? item.pic : item;
-              const settled = slotAnim ? item.settled : true;
-              // Always show rarity color — even during cycling (hype)
-              const bdr = RARITY_COLORS[pic.rarity];
+              const pic        = slotAnim ? item.pic : item;
+              const settled    = slotAnim ? item.settled : true;
+              const isCycling   = !!slotAnim && !settled;
+              const isMystery5x = isCycling && !ownedSet.has(pic.id) && MYSTERY_RARITIES.has(pic.rarity);
+              const bdr         = (is1xResult && stripPhase < 1) ? '#555' : RARITY_COLORS[pic.rarity];
               return (
                 <div
                   key={i}
                   className={`gacha-strip-card${settled ? ' settled' : ' cycling'}`}
                   style={{
                     borderColor: bdr,
-                    ...(settled ? { boxShadow: `0 0 14px ${bdr}` } : {}),
+                    boxShadow: settled && (!is1xResult || stripPhase >= 1) ? `0 0 14px ${bdr}` : undefined,
+                    backgroundColor: (settled || !slotAnim || isMystery5x) && (!is1xResult || stripPhase >= 1) ? RARITY_COLORS[pic.rarity] + '30' : undefined,
                   }}
                 >
-                  {pic.type === 'emoji' ? (
-                    is1xResult ? (
-                      emojiFlood ? (
-                        // 1x ON: dense text-based flood — fills every side of the circle
-                        <div style={{ width: '100%', height: '100%', overflow: 'hidden', fontSize: 36, lineHeight: 1.15, wordBreak: 'break-all', overflowWrap: 'anywhere' }}>
-                          {Array(200).fill(pic.asset).join(' ')}
-                        </div>
-                      ) : (
-                        // 1x OFF: large centered emoji
-                        <span style={{ fontSize: 200, lineHeight: 1 }}>{pic.asset}</span>
-                      )
-                    ) : emojiFlood ? (
-                      // 5x ON: compact 9-emoji grid per slot
-                      <div className="gacha-strip-emoji">
-                        {[...Array(9)].map((_, j) => (
-                          <span key={j} style={{ fontSize: 16, lineHeight: 1 }}>{pic.asset}</span>
-                        ))}
-                      </div>
-                    ) : (
-                      // 5x OFF: single emoji per slot
-                      <span style={{ fontSize: 36, lineHeight: 1 }}>{pic.asset}</span>
-                    )
-                  ) : (
+                  {isMystery5x ? (
+                    <span style={{ fontSize: 36, lineHeight: 1, color: RARITY_COLORS[pic.rarity] }}>??</span>
+                  ) : is1xResult && stripPhase < 2 ? (
+                    <span style={{ fontSize: 120, lineHeight: 1, color: stripPhase === 0 ? '#555' : RARITY_COLORS[pic.rarity] }}>??</span>
+                  ) : pic.type !== 'emoji' ? (
                     <img src={pic.asset} alt={pic.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : is1xResult ? (
+                    emojiFlood
+                      ? <div style={{ width: '100%', height: '100%', overflow: 'hidden', fontSize: 36, lineHeight: 1.15, wordBreak: 'break-all', overflowWrap: 'anywhere' }}>{(pic.asset + ' ').repeat(200).trimEnd()}</div>
+                      : <span style={{ fontSize: 200, lineHeight: 1 }}>{pic.asset}</span>
+                  ) : emojiFlood ? (
+                    <div className="gacha-strip-emoji">
+                      {Array.from({ length: 9 }, (_, j) => <span key={j} style={{ fontSize: 16, lineHeight: 1 }}>{pic.asset}</span>)}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 36, lineHeight: 1 }}>{pic.asset}</span>
                   )}
                 </div>
               );
@@ -306,16 +274,16 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
   useEffect(() => {
     if (emojiFloodRevealed) localStorage.setItem('emojiFloodRevealed', 'true');
   }, [emojiFloodRevealed]);
+
   const fillPct = Math.min(xp, NORMAL_PULL_COST * DRAW_COUNT) / (NORMAL_PULL_COST * DRAW_COUNT) * 100;
 
   return (
     <div className="gacha-page">
-
       <div className="gacha-topbar">
         <button className="gacha-back-btn" onClick={onBack}>←</button>
         <span className="gacha-title">Gacha</span>
         <div className="gacha-xp-area">
-          <ProfileAvatar profilePic={profilePic} size={28} />
+          <ProfileAvatar profilePic={profilePic} size={40} />
           <div className="gacha-xp-bar">
             <div className="gacha-xp-fill" style={{ width: `${fillPct}%` }} />
             <div className="gacha-xp-label">{xp} XP</div>
@@ -340,7 +308,6 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
           emojiFlood={emojiFlood}
         />
       </div>
-
     </div>
   );
 }

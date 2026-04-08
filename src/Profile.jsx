@@ -96,15 +96,14 @@ export const BASE_WEIGHTS  = { common: 76, rare: 20, epic: 3.5, legendary: 0.5 }
 export const START_WEIGHTS = { common: 60, rare: 25,   epic: 12, legendary: 3 };
 export const RAMP_PULLS    = 100;
 
-// Interpolates from START_WEIGHTS → BASE_WEIGHTS over each 100-pull pity cycle
+// Honeymoon: START_WEIGHTS → BASE_WEIGHTS over first RAMP_PULLS, stays flat after.
+// Every RAMP_PULLS-th pull gets START_WEIGHTS for that one pull as pity, then drops back.
 export function getWeights(pullCount) {
-  const cyclePull = pullCount % 100;
-  const t = Math.min(cyclePull, RAMP_PULLS) / RAMP_PULLS;
-  const w = {};
-  for (const r of Object.keys(BASE_WEIGHTS)) {
-    w[r] = START_WEIGHTS[r] + (BASE_WEIGHTS[r] - START_WEIGHTS[r]) * t;
-  }
-  return w;
+  if (pullCount > 0 && pullCount % RAMP_PULLS === 0) return { ...START_WEIGHTS };
+  const t = Math.min(pullCount, RAMP_PULLS) / RAMP_PULLS;
+  return Object.fromEntries(
+    Object.keys(BASE_WEIGHTS).map(r => [r, START_WEIGHTS[r] + (BASE_WEIGHTS[r] - START_WEIGHTS[r]) * t])
+  );
 }
 
 // ─── Supabase persistence ─────────────────────────────────────────────────────
@@ -115,12 +114,7 @@ export async function loadProfile(userId) {
     .eq('user_id', userId)
     .single();
   if (error || !data) return null;
-  return {
-    xp:        data.xp,
-    profilePic: data.profile_pic,
-    owned:     data.owned_pics,
-    pullCount: data.pull_count,
-  };
+  return { xp: data.xp, profilePic: data.profile_pic, owned: data.owned_pics, pullCount: data.pull_count };
 }
 
 export async function saveProfile(userId, { xp, profilePic, owned, pullCount }) {
@@ -135,12 +129,6 @@ export async function saveProfile(userId, { xp, profilePic, owned, pullCount }) 
 
 // Roll from a given pool (NORMAL_PICS or PREMIUM_PICS)
 export function rollGacha(pool, pullCount) {
-  // Pity: every 100th pull guarantees a legendary
-  if ((pullCount + 1) % 100 === 0) {
-    const legendaries = pool.filter(p => p.rarity === 'legendary');
-    if (legendaries.length > 0)
-      return legendaries[Math.floor(Math.random() * legendaries.length)];
-  }
   const weights = getWeights(pullCount);
   const total   = pool.reduce((sum, p) => sum + weights[p.rarity], 0);
   let rand = Math.random() * total;

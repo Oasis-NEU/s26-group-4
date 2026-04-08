@@ -392,163 +392,6 @@ input {
   display: block;
 }
 
-.gacha-pool-toggle {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.gacha-pool-btn {
-  padding: 7px 22px;
-  border-radius: 20px;
-  border: 1px solid #333;
-  background: #1a1a1a;
-  color: #666;
-  font-family: 'Josefin Sans';
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.gacha-pool-btn.active {
-  background: #252525;
-  color: #fff;
-  border-color: #4a90d9;
-}
-
-.gacha-pool-btn:hover:not(.active) {
-  background: #222;
-  color: #aaa;
-}
-
-.gacha-empty-pool {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 32px 16px;
-  color: #444;
-  font-size: 0.85rem;
-  text-align: center;
-}
-
-.gacha-empty-hint {
-  font-size: 0.72rem;
-  color: #333;
-  line-height: 1.5;
-}
-
-.gacha-empty-hint code {
-  color: #4a90d9;
-  font-family: monospace;
-}
-
-.honeymoon-banner {
-  text-align: center;
-  font-size: 0.7rem;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 6px;
-  padding: 4px 8px;
-  margin-bottom: 8px;
-}
-
-.gacha-rates {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.gacha-rate-badge {
-  font-size: 0.65rem;
-  text-transform: capitalize;
-}
-
-.gacha-result-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  border: 2px solid #444;
-  border-radius: 10px;
-  background: #0a0a0a;
-  margin-bottom: 10px;
-  gap: 4px;
-  transition: border-color 0.3s;
-}
-
-.gacha-spinning {
-  font-size: 2.5rem;
-  animation: gacha-spin 0.15s infinite alternate;
-}
-
-@keyframes gacha-spin {
-  from { transform: scale(0.8) rotate(-15deg); opacity: 0.5; }
-  to   { transform: scale(1.2) rotate(15deg);  opacity: 1;   }
-}
-
-.gacha-result-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.gacha-result-name {
-  font-size: 0.75rem;
-  color: #ccc;
-}
-
-.gacha-new-badge {
-  font-size: 0.6rem;
-  background: #f59e0b;
-  color: #000;
-  padding: 1px 5px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-
-.gacha-idle-text {
-  color: #444;
-  font-size: 0.75rem;
-  font-style: italic;
-}
-
-.gacha-roll-btn {
-  width: 100%;
-  padding: 8px 0;
-  background: linear-gradient(135deg, #4a90d9, #a855f7);
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-family: 'Josefin Sans';
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-  margin-bottom: 6px;
-}
-
-.gacha-roll-btn:hover:not(.disabled) {
-  opacity: 0.88;
-  transform: scale(1.02);
-}
-
-.gacha-roll-btn.disabled {
-  background: #222;
-  color: #555;
-  cursor: not-allowed;
-}
-
-.gacha-earn-hint {
-  text-align: center;
-  font-size: 0.65rem;
-  color: #555;
-}
 
 .collection-grid {
   display: grid;
@@ -770,16 +613,6 @@ input {
   cursor: pointer;
 }
 
-.gacha-card-label {
-  font-size: 0.48rem;
-  color: #666;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  line-height: 1.2;
-}
 
 .gacha-card {
   position: relative;
@@ -822,9 +655,7 @@ input {
 
 .gacha-card-on {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: auto 0 0;
   text-align: center;
   font-size: 0.48rem;
   color: #fff;
@@ -838,9 +669,7 @@ input {
 
 .gacha-strip {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
+  inset: auto 10px 10px;
   display: flex;
   gap: 6px;
   justify-content: center;
@@ -938,12 +767,13 @@ input {
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
   background: var(--g-dropdown-bg);
   border: 1px solid var(--g-dropdown-border);
   border-radius: 8px;
-  padding: 8px;
-  width: 100%;
+  padding: 12px;
+  min-width: 100%;
   box-sizing: border-box;
 }
 
@@ -959,15 +789,3 @@ input {
   font-size: 0.85rem;
 }
 
-.gacha-pool-empty-hint {
-  font-size: 0.7rem;
-  color: #2a2a2a;
-  text-align: center;
-}
-
-.gacha-pool-empty-hint code { color: #fff; font-family: monospace; }
-
-@keyframes gacha-spin {
-  from { transform: scale(0.8) rotate(-15deg); opacity: 0.5; }
-  to   { transform: scale(1.2) rotate(15deg);  opacity: 1;   }
-}

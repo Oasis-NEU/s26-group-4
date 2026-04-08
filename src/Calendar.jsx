@@ -110,7 +110,7 @@ function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp, owned
     <div style={{ position: 'absolute', top: 10, right: 10 }}>
       {user
         ? <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ProfileAvatar profilePic={profilePic} size={38} />
+            <ProfileAvatar profilePic={profilePic} size={40} />
             <button onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}>
               {user.email}
             </button>
@@ -120,9 +120,9 @@ function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp, owned
                   const uniqueOwned = new Set(owned.filter(id => ALL_PICS.some(p => p.id === id))).size;
                   const pct = uniqueOwned / ALL_PICS.length;
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', paddingBottom: '6px' }}>
-                      <ProfileAvatar profilePic={profilePic} size={120} />
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', paddingBottom: '6px' }}>
+                      <span style={{ marginLeft: '-16px' }}><ProfileAvatar profilePic={profilePic} size={140} /></span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginLeft: '-10px' }}>
                         <span style={{ fontSize: '1.1rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{xp} XP</span>
                         <span style={{ fontSize: '0.85rem', color: '#888', whiteSpace: 'nowrap' }}>{pullCount} rolls</span>
                         <span style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: collectionColor(pct) }}>
