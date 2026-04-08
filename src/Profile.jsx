@@ -97,9 +97,9 @@ export const START_WEIGHTS = { common: 60, rare: 25,   epic: 12, legendary: 3 };
 export const RAMP_PULLS    = 100;
 
 // Honeymoon: START_WEIGHTS → BASE_WEIGHTS over first RAMP_PULLS, stays flat after.
-// Every RAMP_PULLS-th pull gets START_WEIGHTS for that one pull as pity, then drops back.
+// Pity window: pulls 100–110 get START_WEIGHTS, then permanently BASE_WEIGHTS.
 export function getWeights(pullCount) {
-  if (pullCount > 0 && pullCount % RAMP_PULLS === 0) return { ...START_WEIGHTS };
+  if (pullCount >= RAMP_PULLS && pullCount % RAMP_PULLS <= 10) return { ...START_WEIGHTS };
   const t = Math.min(pullCount, RAMP_PULLS) / RAMP_PULLS;
   return Object.fromEntries(
     Object.keys(BASE_WEIGHTS).map(r => [r, START_WEIGHTS[r] + (BASE_WEIGHTS[r] - START_WEIGHTS[r]) * t])

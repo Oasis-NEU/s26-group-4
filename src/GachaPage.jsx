@@ -167,14 +167,12 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                 const isEquipped  = profilePic === pic.id;
                 const isHighlit   = highlighted === pic.id;
                 const showMystery = !isOwned && MYSTERY_RARITIES.has(pic.rarity);
-                const showColor   = isOwned || (isHighlit && !showMystery);
-                const spanFilter  = showColor ? 'none' : 'grayscale(1) opacity(0.15)';
+                const spanFilter  = (isOwned || (isHighlit && !showMystery)) ? 'none' : 'grayscale(1) opacity(0.15)';
                 const rarityColor = (isOwned || isHighlit) ? RARITY_COLORS[rarity] : 'var(--g-card-border)';
-                const borderColor = (showMystery && !isHighlit)
-                  ? 'var(--g-card-border)'
-                  : (rolling && !isHighlit && !isOwned)
-                    ? 'var(--g-rolling-border)'
-                    : rarityColor;
+                const borderColor = isHighlit ? rarityColor
+                  : showMystery   ? 'var(--g-card-border)'
+                  : (rolling && !isOwned) ? 'var(--g-rolling-border)'
+                  : rarityColor;
 
                 return (
                   <div
