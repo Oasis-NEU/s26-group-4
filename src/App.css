@@ -2,6 +2,10 @@
 
 /* ── Adaptive palette (dark default, light override) ── */
 :root {
+  --color-background-primary: #1a1a1a;
+  --color-border-secondary:   #444;
+  --color-border-tertiary:    #333;
+
   --g-page-bg:         rgba(50,  50,  50,  0.97);
   --g-pool-bg:         rgba(40,  40,  40,  0.8);
   --g-pool-border:     #444;
@@ -25,6 +29,10 @@
 
 @media (prefers-color-scheme: light) {
   :root {
+    --color-background-primary: #ffffff;
+    --color-border-secondary:   #ccc;
+    --color-border-tertiary:    #ddd;
+
     --g-page-bg:         rgba(240, 240, 240, 0.97);
     --g-pool-bg:         rgba(225, 225, 225, 0.9);
     --g-pool-border:     #ccc;
@@ -262,8 +270,8 @@ input {
 }
 
 .timePick {
-  border: 1.5px solid white;
-  background-color: black;
+  border: 1.5px solid var(--color-border-secondary);
+  background-color: var(--color-background-primary);
   position:absolute;
   width: 21.4%;
   right:39.25%; /* centered if fullscreen, not if minimized, make width a % to fix */
@@ -609,16 +617,16 @@ input {
 }
 
 .gacha-topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding-bottom: 14px;
-  gap: 12px;
   flex-shrink: 0;
 }
 
 .gacha-back-btn {
   flex-shrink: 0;
+  justify-self: start;
 }
 
 .gacha-title {
@@ -632,6 +640,7 @@ input {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  justify-self: end;
 }
 
 .gacha-xp-bar {
@@ -792,8 +801,8 @@ input {
 .gacha-card-wrap.rarity-common:not(.owned):hover span { filter: none !important; }
 .gacha-card-wrap.mystery { cursor: default; }
 .gacha-card.highlighted {
-  transform: scale(1.1);
-  box-shadow: 0 0 12px currentColor;
+  transform: scale(1.03);
+  box-shadow: 0 0 6px currentColor;
   z-index: 2;
 }
 .gacha-card.equipped { box-shadow: 0 0 8px rgba(255,255,255,0.15); }
@@ -898,9 +907,8 @@ input {
 
 /* Emoji flood toggle button */
 .gacha-emoji-toggle {
-  font-size: 0.65rem;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: 0.75rem;
+  padding: 3px 10px;
   border: 1px solid var(--g-muted);
   color: var(--g-muted);
   background: transparent;

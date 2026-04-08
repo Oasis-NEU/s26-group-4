@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ProfileAvatar, PicDisplay,
   NORMAL_PICS, PREMIUM_PICS,
@@ -7,13 +7,12 @@ import {
 } from './Profile';
 
 const DRAW_COUNT = 5;
-const RARITY_PAUSE = { common: 1, rare: 1.6, epic: 2.8, legendary: 5 };
 // Rarities hidden as mystery until unlocked
 const MYSTERY_RARITIES = new Set(['epic', 'legendary']);
 // Reverse-biased weights for the 1x cycling animation (epic/legendary hover more = hype)
 const CYCLE_WEIGHTS = { common: 2, rare: 10, epic: 30, legendary: 55 };
 
-function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, setProfilePic, pullCount, setPullCount, emojiFlood, setEmojiFlood }) {
+function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, setProfilePic, pullCount, setPullCount, emojiFlood, setEmojiFlood, emojiFloodRevealed, setEmojiFloodRevealed }) {
   const [rolling, setRolling]         = useState(false);
   const [results, setResults]         = useState([]);
   const [highlighted, setHighlighted] = useState(null); // 1x cycling highlight
@@ -41,7 +40,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
 
     const randPic = () => pics[Math.floor(Math.random() * pics.length)];
 
-    // Reverse-biased pick for 1x cycling — legendary/epic flash much more often
+    // Reverse-biased pick for 1x cycling — legendary flashes as ? for tension
     const cycleTotal = pics.reduce((s, p) => s + (CYCLE_WEIGHTS[p.rarity] ?? 2), 0);
     function randCyclePic() {
       let r = Math.random() * cycleTotal;
@@ -53,18 +52,16 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
       // ── Single draw: grid highlighting spin ──────────────────────────────
       // All pics eligible — mystery cards flash briefly as a teaser preview
       let frame = 0;
-      const FAST = 22, SLOW = 26;
+      const TOTAL_FRAMES = 48;
 
       function step() {
         const pic = randCyclePic();
         setHighlighted(pic.id);
         frame++;
-        const pause = RARITY_PAUSE[pic.rarity] ?? 1;
-        if (frame < FAST) {
-          setTimeout(step, 90);
-        } else if (frame < FAST + SLOW) {
-          const t = (frame - FAST) / SLOW;
-          setTimeout(step, 90 + t * 400 * pause);
+        if (frame < TOTAL_FRAMES) {
+          // Exponential easing: starts ~30ms, ends ~3000ms
+          const t = frame / TOTAL_FRAMES;
+          setTimeout(step, 30 * Math.pow(100, t));
         } else {
           // Land — reveal the result (bypasses mystery veil)
           setHighlighted(null);
@@ -76,8 +73,9 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
             setResults(drawn);
             setRevealId(null);
             setRolling(false);
+            if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), 700);
             setTimeout(() => setResults([]), 2500);
-          }, 1400);
+          }, 2000);
         }
       }
       step();
@@ -138,6 +136,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                 setResults(drawn);
                 setSlotAnim(null);
                 setRolling(false);
+                if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), 700);
                 setTimeout(() => setResults([]), 3000);
               }, 2000);
             }
@@ -159,9 +158,12 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
           {setEmojiFlood && (
             <button
               className={`gacha-emoji-toggle${emojiFlood ? ' active' : ''}`}
-              onClick={() => setEmojiFlood(v => !v)}
+              onClick={() => {
+                setEmojiFlood(v => !v);
+                if (!emojiFlood && results.length > 0 && setEmojiFloodRevealed) setEmojiFloodRevealed(true);
+              }}
               disabled={rolling}
-            >emoji flood</button>
+            >{emojiFloodRevealed ? 'Emoji Flood' : '???'}</button>
           )}
           <span className="gacha-pool-box-owned">{uniqueOwned} / {pics.length}</span>
         </div>
@@ -182,14 +184,17 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                 const isRevealing     = revealId === pic.id;
                 const isLockedMystery = !isOwned && MYSTERY_RARITIES.has(pic.rarity);
 
-                // Mystery veil: lifted when highlighted (teaser) or final reveal
-                const showMystery = isLockedMystery && !isHighlit && !isRevealing;
+                // Legendary locked: stays ? even when highlighted (tension, no reveal)
+                // Epic locked: lifts veil when highlighted (brief teaser)
+                const showMystery = isLockedMystery && !isRevealing &&
+                  (rarity === 'legendary' || !isHighlit);
                 // Owned always shows full color; highlights/reveals override everything
-                const showColor = isOwned || isHighlit || isRevealing;
+                const showColor = isOwned || (isHighlit && !showMystery) || isRevealing;
                 // Locked non-mystery (common + rare) → faded B&W until owned
                 const spanFilter = showColor ? 'none' : 'grayscale(1) opacity(0.15)';
 
-                const borderColor = showMystery
+                // Highlighted mystery still shows rarity border for tension
+                const borderColor = (showMystery && !isHighlit)
                   ? 'var(--g-card-border)'
                   : (rolling && !isHighlit && !isOwned && !isRevealing)
                     ? 'var(--g-rolling-border)'
@@ -293,7 +298,14 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
 }
 
 export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned, setOwned, pullCount, setPullCount, onBack }) {
-  const [emojiFlood, setEmojiFlood] = useState(false);
+  const [emojiFlood, setEmojiFlood]               = useState(false);
+  const [emojiFloodRevealed, setEmojiFloodRevealed] = useState(
+    () => localStorage.getItem('emojiFloodRevealed') === 'true'
+  );
+
+  useEffect(() => {
+    if (emojiFloodRevealed) localStorage.setItem('emojiFloodRevealed', 'true');
+  }, [emojiFloodRevealed]);
   const fillPct = Math.min(xp, NORMAL_PULL_COST * DRAW_COUNT) / (NORMAL_PULL_COST * DRAW_COUNT) * 100;
 
   return (
@@ -318,6 +330,7 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
           profilePic={profilePic} setProfilePic={setProfilePic}
           pullCount={pullCount} setPullCount={setPullCount}
           emojiFlood={emojiFlood} setEmojiFlood={setEmojiFlood}
+          emojiFloodRevealed={emojiFloodRevealed} setEmojiFloodRevealed={setEmojiFloodRevealed}
         />
         <PoolBox
           title="Premium" pics={PREMIUM_PICS} cost={PREMIUM_PULL_COST}

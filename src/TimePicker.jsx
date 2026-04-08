@@ -408,7 +408,7 @@ function setYearIdx(year) {
         color: "var(--color-text-tertiary)",
         marginTop: 20,
       }}>
-        Drag, cllick, or scroll to select
+        Drag, click, or scroll to select
       </p>
     </div>
   );

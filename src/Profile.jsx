@@ -9,8 +9,8 @@ const img = (id, label, rarity, asset) => ({ id, label, rarity, type: 'image', a
 // ─── Normal pool (emoji) ─────────────────────────────────────────────────────
 export const NORMAL_PICS = [
   // common
-  e('cat',        'Cat',        'common',    '🐱'),
-  e('dog',        'Dog',        'common',    '🐶'),
+  e('cat',        'Butterfly',  'common',    '🦋'),
+  e('dog',        'Mushroom',   'common',    '🍄'),
   e('plant',      'Plant',      'common',    '🌿'),
   e('blossom',    'Blossom',    'common',    '🌸'),
   // rare
@@ -18,28 +18,28 @@ export const NORMAL_PICS = [
   e('person_l',   'Person',     'rare',      '🧑🏻'),
   e('person_ml',  'Person',     'rare',      '🧑🏼'),
   e('person_m',   'Person',     'rare',      '🧑🏽'),
-  e('person_md',  'Person',     'rare',      '🧑🏾'),
-  e('person_d',   'Person',     'rare',      '🧑🏿'),
   e('woman_y',    'Woman',      'rare',      '👩'),
   e('woman_l',    'Woman',      'rare',      '👩🏻'),
   e('woman_ml',   'Woman',      'rare',      '👩🏼'),
   e('woman_m',    'Woman',      'rare',      '👩🏽'),
+  e('person_md',  'Person',     'rare',      '🧑🏾'),
+  e('person_d',   'Person',     'rare',      '🧑🏿'),
   e('woman_md',   'Woman',      'rare',      '👩🏾'),
   e('woman_d',    'Woman',      'rare',      '👩🏿'),
   // epic
-  e('oasis_default', 'Oasis',   'epic',      '🌊'),
-  e('star',       'Star',       'epic',      '⭐'),
+  e('wave', 'Wave',   'epic',      '🌊'),
+  e('star',       'Ghost',      'epic',      '👻'),
   e('fire',       'Fire',       'epic',      '🔥'),
   e('moon',       'Moon',       'epic',      '🌕'),
   e('crystal',    'Crystal',    'epic',      '💎'),
   e('crown',      'Crown',      'epic',      '👑'),
-  e('ghost',      'Ghost',      'epic',      '👻'),
+  e('ghost',      'Comet',      'epic',      '☄️'),
   e('orb',        'Orb',        'epic',      '🔮'),
   // legendary
   e('dragon',     'Dragon',     'legendary', '🐉'),
   e('unicorn',    'Unicorn',    'legendary', '🦄'),
   e('steelball',  'Steel Ball', 'legendary', '🎱'),
-  e('skull',      'Skull',      'legendary', '💀'),
+  e('skull',      'Skull',      'legendary', '☠️'),
 ];
 
 // ─── Premium pool (image assets) ─────────────────────────────────────────────
@@ -63,16 +63,16 @@ export const PREMIUM_PICS = [
   img('r7', 'Guy', 'rare', '/r7.jpg'),
   img('e1', 'Jotoro', 'rare', '/e1.jpg'),
   img('r5', 'Giorno', 'rare', '/r5.jpg'),
-  img('r6', 'Doves', 'rare', '/r6.jpg'),
+  img('r6', 'Flying Doves', 'rare', '/r6.jpg'),
   img('r4', 'Yoimiya', 'rare', '/r4.jpg'),
   // common
   img('n1', 'Died Again Oops', 'common', '/n1.jpg'),
   img('n2', 'The Trio', 'common', '/n2.jpg'),
   img('n3', 'Failed Salvation', 'common', '/n3.jpg'),
+  img('n8', 'Chiaki Nanami', 'common', '/n8.png'),
   img('n7', 'Steel Ball', 'common', '/n7.webp'),
   img('n5', 'Johnny Joestar', 'common', '/n5.jpg'),
   img('n6', 'Visitor\'s Pass', 'common', '/n6.jpg'),
-  img('n8', 'Chiaki Nanami', 'common', '/n8.png'),
   img('n9', 'Izuru Kamukura', 'common', '/n9.png'),
 ];
 
@@ -92,13 +92,14 @@ export const PREMIUM_PULL_COST = 300;
 export const XP_PER_TASK       = 50;
 
 // ─── Gacha odds ───────────────────────────────────────────────────────────────
-export const BASE_WEIGHTS  = { common: 60, rare: 25, epic: 12, legendary:  3 };
-export const START_WEIGHTS = { common: 85, rare: 10, epic:  4, legendary:  1 };
-export const RAMP_PULLS    = 50;
+export const BASE_WEIGHTS  = { common: 76, rare: 20, epic: 3.5, legendary: 0.5 };
+export const START_WEIGHTS = { common: 60, rare: 25,   epic: 12, legendary: 3 };
+export const RAMP_PULLS    = 100;
 
-// Interpolates from START_WEIGHTS → BASE_WEIGHTS over RAMP_PULLS pulls
+// Interpolates from START_WEIGHTS → BASE_WEIGHTS over each 100-pull pity cycle
 export function getWeights(pullCount) {
-  const t = Math.min(pullCount, RAMP_PULLS) / RAMP_PULLS;
+  const cyclePull = pullCount % 100;
+  const t = Math.min(cyclePull, RAMP_PULLS) / RAMP_PULLS;
   const w = {};
   for (const r of Object.keys(BASE_WEIGHTS)) {
     w[r] = START_WEIGHTS[r] + (BASE_WEIGHTS[r] - START_WEIGHTS[r]) * t;
@@ -134,6 +135,12 @@ export async function saveProfile(userId, { xp, profilePic, owned, pullCount }) 
 
 // Roll from a given pool (NORMAL_PICS or PREMIUM_PICS)
 export function rollGacha(pool, pullCount) {
+  // Pity: every 100th pull guarantees a legendary
+  if ((pullCount + 1) % 100 === 0) {
+    const legendaries = pool.filter(p => p.rarity === 'legendary');
+    if (legendaries.length > 0)
+      return legendaries[Math.floor(Math.random() * legendaries.length)];
+  }
   const weights = getWeights(pullCount);
   const total   = pool.reduce((sum, p) => sum + weights[p.rarity], 0);
   let rand = Math.random() * total;
