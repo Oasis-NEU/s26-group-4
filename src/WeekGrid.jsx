@@ -1,4 +1,5 @@
-import EventAdder, { setCompletion } from "./Event";
+import {useState} from 'react'
+import EventAdder, { setCompletion , deleteDbEvent } from "./Event";
 import { getDayName, getHourName, getMonthName, getDaysInMonth, getMonthOffset, mod, isLeapYear, hashDate } from './Util.jsx'
 
 export function getDayByIndex(date, index) {
@@ -78,10 +79,12 @@ function WeekGrid(props) {
   const setEvents = props.setEvents;
   const backClick = props.backClick;
   const user = props.user;
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const month = date.getMonth();
   const year = date.getFullYear();
   const day = date.getDate();
+
   // const dayOfWeekIndex = getDayOfWeekIndex(date);
 
   // console.log("asdas");
@@ -127,8 +130,10 @@ function WeekGrid(props) {
                 {getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).length == 0
                   ? ""
                   : getEventsByHour(events, getDateByIndex(date, dayIndex), hourIndex).map((event) => {
-                    return (<div className="task" onClick={() => setCompletion(event, !event.completion, events, setEvents, user)}
-                    style={{top: `${getTopOffset(event)}%`,
+                    return (<div className="task" onClick={() => 
+                      isDeleting ? deleteDbEvent(event, events, setEvents, user) 
+                      : setCompletion(event, !event.completion, events, setEvents, user)
+                    } style={{top: `${getTopOffset(event)}%`,
                     backgroundColor: hashNameToColor(event.name),
                     left: `${getEventCollisions(events, getDateByIndex(date, dayIndex)).find(
                       (group) => group.findIndex((e) => e.dbId == event.dbId) != -1).findIndex(
@@ -153,7 +158,7 @@ function WeekGrid(props) {
           </tr>
         ))}
       </table>
-      <EventAdder date={date} setDate={setDate} events={events} setEvents={setEvents} user = {user}/>
+      <EventAdder date={date} setDate={setDate} isDeleting={isDeleting} setIsDeleting={setIsDeleting} events={events} setEvents={setEvents} user = {user}/>
     </div>
   )
 }

@@ -3,6 +3,26 @@ import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 import { supabase } from './supabase'
 
+export async function deleteDbEvent(event, events, setEvents, user) {
+  let hashed = hashDate(event.deadline);
+  let today = events[hashed];
+  let filtered = today.filter((e) => e.dbId != event.dbId)
+  let newEvents = { ...events, [hashed]: filtered };
+  setEvents(newEvents);
+  if(user){
+    try {
+      const { data, error } = await supabase // Destructure the Supabase call
+        .from("tasks") // From our "Groceries" table
+        .delete() // Delete
+        .match({ "id": event.dbId }); // The item that has the same id as the inputted id
+      if (error) throw error; // If there's an error, throw it
+    } catch (error) {
+      alert(error); // If there is an error, alert it on the window.
+    }
+  }
+  getEvents();
+}
+
 export async function setCompletion(event, completion, events, setEvents, user) {
   let newEvent = {}
   Object.assign(newEvent, event);
@@ -11,7 +31,7 @@ export async function setCompletion(event, completion, events, setEvents, user) 
 }
 
 export async function updateEvent(event, properties, events, setEvents, save) {
-  console.log(event)
+  // console.log(event)
   let hashed = hashDate(event.deadline);
   let today = events[hashed];
   let filtered = today.filter((e) => e.dbId != event.dbId)
@@ -142,6 +162,8 @@ function EventAdder(props) {
   const events = props.events;
   const setEvents = props.setEvents;
   const user = props.user;
+  const isDeleting = props.isDeleting;
+  const setIsDeleting = props.setIsDeleting;
   
   const validDays = [];
   for (let i = 0; i < 7; i++) {
@@ -207,6 +229,15 @@ function EventAdder(props) {
   return (
     <div className="eventAdder">
       <form onSubmit={onSubmit}>
+        <label for="toggleDelete" style={{padding:10, left:"-10%", position:"relative"}}>
+          <input
+            type="checkbox"
+            name="toggleDelete"
+            checked={isDeleting}
+            onChange={(event) => setIsDeleting(event.target.checked)}
+          />
+          Toggle Deletion
+        </label>
         <label htmlFor="day">Due Date: </label>
         <select className={"font"} name="day" value={selectedDay} onChange={(event) => setSelectedDay(event.target.value)}>
           {Array.from(Array(validDays.length)).map((_, index) => (
