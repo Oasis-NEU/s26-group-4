@@ -5,7 +5,7 @@ import WeekGrid from './WeekGrid';
 import { supabase } from './supabase';
 import { addEvents, setCompletion } from './Event';
 import { getHourAndAmFromIndex } from './Util';
-import { ProfileAvatar, loadProfile, saveProfile } from './Profile';
+import { ProfileAvatar, loadProfile, saveProfile, NORMAL_PICS, PREMIUM_PICS } from './Profile';
 import GachaPage from './GachaPage';
 
 // Fetch events from Supabase and add to state
@@ -51,8 +51,17 @@ export async function getEvents(events, setEvents, user) {
   }
 }
 
+const ALL_PICS = [...NORMAL_PICS, ...PREMIUM_PICS];
+
+function collectionColor(pct) {
+  if (pct >= 0.90) return '#f59e0b'; // legendary
+  if (pct >= 0.75) return '#a855f7'; // epic
+  if (pct >= 0.50) return '#4a90d9'; // rare
+  return '#aaaaaa';                   // common
+}
+
 // Login dropdown component with New User option
-function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp }) {
+function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp, owned, pullCount }) {
   const [visible, setVisible] = useState(false) // Dropdown visibility
   const [email, setEmail] = useState('') // Email input
   const [password, setPassword] = useState('') // Password input
@@ -100,20 +109,29 @@ function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp }) {
   return (
     <div style={{ position: 'absolute', top: 10, right: 10 }}>
       {user
-        ? <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <ProfileAvatar profilePic={profilePic} size={22} />
+        ? <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ProfileAvatar profilePic={profilePic} size={38} />
+            <button onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}>
               {user.email}
             </button>
             {visible && (
               <div className="auth-dropdown-menu">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '2px' }}>
-                  <ProfileAvatar profilePic={profilePic} size={26} />
-                  <span style={{ fontSize: '0.65rem', color: '#888', whiteSpace: 'nowrap' }}>{xp} XP</span>
-                </div>
+                {(() => {
+                  const uniqueOwned = new Set(owned.filter(id => ALL_PICS.some(p => p.id === id))).size;
+                  const pct = uniqueOwned / ALL_PICS.length;
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '6px' }}>
+                      <ProfileAvatar profilePic={profilePic} size={96} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{xp} XP</span>
+                        <span style={{ fontSize: '0.7rem', color: '#888', whiteSpace: 'nowrap' }}>{pullCount} rolls</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap', color: collectionColor(pct) }}>
+                          {uniqueOwned} / {ALL_PICS.length} collected
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
                 <button onClick={() => { setVisible(false); setView(View.GACHA); }}>Gacha</button>
                 <button onClick={() => signOut(setEvents)}>Logout</button>
               </div>
@@ -213,9 +231,16 @@ function Calendar() {
     supabase.auth.getUser().then(res => setUser(res.data.user))
   }, [])
 
-  // Load profile from Supabase when user logs in
+  // Load profile from Supabase when user logs in; reset to defaults on logout
   useEffect(() => {
-    if (!user) { profileLoaded.current = false; return; }
+    if (!user) {
+      profileLoaded.current = false;
+      setXp(1500);
+      setProfilePic('plant');
+      setOwned(['blossom', 'plant']);
+      setPullCount(0);
+      return;
+    }
     loadProfile(user.id).then(p => {
       if (p) {
         setXp(p.xp)
@@ -223,6 +248,7 @@ function Calendar() {
         setOwned(p.owned)
         setPullCount(p.pullCount)
       }
+      // If no profile (new user), defaults are already set by the logout branch above
       profileLoaded.current = true
     })
   }, [user])
@@ -276,6 +302,7 @@ function Calendar() {
     <div className="calendar" style={{ position: 'relative' }}>
       <AuthDropdown user={user} setUser={setUser} setEvents={setEvents}
         profilePic={profilePic} setView={setView} xp={xp}
+        owned={owned} pullCount={pullCount}
       />
       {view === View.MONTH
         ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick} events={events}/>
