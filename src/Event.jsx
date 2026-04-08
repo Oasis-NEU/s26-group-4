@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { getDayName, hashDate } from './Util.jsx'
 import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 import { supabase } from './supabase'
-import { getEvents } from './Calendar.jsx'
 
 export async function setCompletion(event, completion, events, setEvents, user) {
   let newEvent = {}
@@ -19,7 +18,6 @@ export async function updateEvent(event, properties, events, setEvents, save) {
   filtered.push(event)
   let newEvents = { ...events, [hashed]: filtered };
   setEvents(newEvents);
-  getEvents();
   if (save) {
     try {
       const { data, error } = await supabase
@@ -34,7 +32,7 @@ export async function updateEvent(event, properties, events, setEvents, save) {
   }
 }
 
-async function saveEvent(event) {
+async function saveEvent(event, setEvents) {
   console.log("saving")
   console.log(event)
   if (event.userId == null) { return }
@@ -50,22 +48,31 @@ async function saveEvent(event) {
       .insert(entry) // Insert passed in name and price
       .single(); // Only insert it once
     if (error) throw error; // If there is an error, throw it
-    // window.location.reload(); // Load the window once complete
-    getEvents()
+    // clanker: Replace the local null-dbId event with the real DB id
+    let hashed = hashDate(event.deadline);
+    setEvents((prev) => {
+      if (!prev[hashed]) return prev;
+      return { ...prev, [hashed]: prev[hashed].map((e) =>
+        e.dbId === null && e.tempId === event.tempId
+          ? { ...e, dbId: data.id, tempId: null }
+          : e
+      )};
+    });
   } catch (error) {
     alert(error); // If an error is caught, alert it on screen
   }
 }
 
-function newEvent(hourIndex, minutes, name, dbId = null, userId, save, date, completion = false) {
+function newEvent(hourIndex, minutes, name, dbId = null, userId, save, date, completion = false, setEvents) {
   let event = {hourIndex: hourIndex, minutes: minutes, name: name,
-    dbId: userId ? dbId : crypto.randomUUID(), userId: userId, completion: completion,
+    dbId: userId ? dbId : crypto.randomUUID(), tempId: save ? crypto.randomUUID() : null,
+    userId: userId, completion: completion,
     deadline: new Date(date.getFullYear(), date.getMonth(), date.getDate(), hourIndex, minutes)}
   // console.log(event)
   // console.log(save)
   // console.log(date)
   if (save) {
-    saveEvent(event)
+    saveEvent(event, setEvents)
   }
   return event
 }
@@ -103,7 +110,7 @@ export function addEvents(day, hour, minutes, am, name, monthIndex, year, events
   console.log(events)
 
   recurringDates.forEach((recurrenceDate) => {
-    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId, save, recurrenceDate, completion);
+    let event = newEvent(hourIndex, parseInt(minutes), name, dbId, userId, save, recurrenceDate, completion, setEvents);
     // console.log(event)
     let hashed = hashDate(recurrenceDate)
     // console.log(hashed)
