@@ -236,7 +236,7 @@ function EventAdder(props) {
         <label for="toggleDelete" style={{padding:10, left:"-10%", position:"relative"}}>
           <input
             type="checkbox"
-            name="toggleDelete"
+            id="toggleDelete"
             checked={isDeleting}
             onChange={(event) => setIsDeleting(event.target.checked)}
           />
@@ -275,7 +275,7 @@ function EventAdder(props) {
         <label for="isRecurring" style={{padding:10}}>
           <input
             type="checkbox"
-            name="isRecurring"
+            id="isRecurring"
             checked={isRecurring}
             onChange={(event) => setIsRecurring(event.target.checked)}
           />
