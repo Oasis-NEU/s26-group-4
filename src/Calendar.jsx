@@ -20,6 +20,7 @@ export async function getEvents(events, setEvents, user) {
     if (error) throw error; // If there is an error, throw it
     if (data != null) { // If there is data fetched
       // setGroceries(data); // Set our groceries state variable to the data
+      events = { ...events };
       for (const [key, value] of Object.entries(events)) {
         events[key] = value.filter((e) => e.dbId != null);
       }
@@ -110,7 +111,7 @@ function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp, owned
     <div style={{ position: 'absolute', top: 10, right: 10 }}>
       {user
         ? <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <ProfileAvatar profilePic={profilePic} size={40} />
+            <ProfileAvatar profilePic={profilePic} size={38} />
             <button onClick={() => {setVisible(!visible); setShowNewUserPopup(false)}}>
               {user.email}
             </button>
@@ -120,12 +121,12 @@ function AuthDropdown({ user, setUser, setEvents, profilePic, setView, xp, owned
                   const uniqueOwned = new Set(owned.filter(id => ALL_PICS.some(p => p.id === id))).size;
                   const pct = uniqueOwned / ALL_PICS.length;
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', paddingBottom: '6px' }}>
-                      <span style={{ marginLeft: '-16px' }}><ProfileAvatar profilePic={profilePic} size={140} /></span>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginLeft: '-10px' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{xp} XP</span>
-                        <span style={{ fontSize: '0.85rem', color: '#888', whiteSpace: 'nowrap' }}>{pullCount} rolls</span>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap', color: collectionColor(pct) }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '6px' }}>
+                      <ProfileAvatar profilePic={profilePic} size={96} />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap' }}>{xp} XP</span>
+                        <span style={{ fontSize: '0.7rem', color: '#888', whiteSpace: 'nowrap' }}>{pullCount} rolls</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, whiteSpace: 'nowrap', color: collectionColor(pct) }}>
                           {uniqueOwned} / {ALL_PICS.length} collected
                         </span>
                       </div>
@@ -225,39 +226,22 @@ function Calendar() {
   const [owned, setOwned] = useState(['blossom', 'plant'])
   const [pullCount, setPullCount] = useState(0)
   const profileLoaded = useRef(false)
-  const initialLoadDone = useRef(false)
 
-  // On mount: fetch user AND profile together so there's no flash of the default pfp
+  // On mount, get user from Supabase
   useEffect(() => {
-    supabase.auth.getUser().then(async res => {
-      const u = res.data.user;
-      if (u) {
-        const p = await loadProfile(u.id);
-        if (p) {
-          setXp(p.xp);
-          setProfilePic(p.profilePic);
-          setOwned(p.owned);
-          setPullCount(p.pullCount);
-        }
-        profileLoaded.current = true;
-        initialLoadDone.current = true;
-      }
-      setUser(u); // set user after profile is ready to avoid the [user] effect re-loading
-    });
+    supabase.auth.getUser().then(res => setUser(res.data.user))
   }, [])
 
-  // Load profile from Supabase when user logs in interactively; reset to defaults on logout
+  // Load profile from Supabase when user logs in; reset to defaults on logout
   useEffect(() => {
     if (!user) {
       profileLoaded.current = false;
-      initialLoadDone.current = false;
       setXp(1500);
       setProfilePic('plant');
       setOwned(['blossom', 'plant']);
       setPullCount(0);
       return;
     }
-    if (initialLoadDone.current) return; // already loaded in mount effect
     loadProfile(user.id).then(p => {
       if (p) {
         setXp(p.xp)

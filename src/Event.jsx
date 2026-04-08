@@ -4,22 +4,24 @@ import { dayInBounds, getDateByIndex } from './WeekGrid.jsx'
 import { supabase } from './supabase'
 
 export async function deleteDbEvent(event, events, setEvents, user) {
-  let hashed = hashDate(event.deadline);
-  let today = events[hashed];
-  let filtered = today.filter((e) => e.dbId != event.dbId)
-  let newEvents = { ...events, [hashed]: filtered };
-  setEvents(newEvents);
-  if(user){
+  if(user && event.dbId != null){
     try {
       const { data, error } = await supabase // Destructure the Supabase call
         .from("tasks") // From our "Groceries" table
         .delete() // Delete
         .match({ "id": event.dbId }); // The item that has the same id as the inputted id
       if (error) throw error; // If there's an error, throw it
+      // Remove from local state after DB delete succeeds
     } catch (error) {
       alert(error); // If there is an error, alert it on the window.
+      return;
     }
   }
+  let hashed = hashDate(event.deadline);
+  let today = events[hashed];
+  let filtered = today.filter((e) => e.dbId != event.dbId)
+  let newEvents = { ...events, [hashed]: filtered };
+  setEvents(newEvents);
 }
 
 export async function setCompletion(event, completion, events, setEvents, user) {
@@ -70,14 +72,14 @@ async function saveEvent(event, setEvents) {
     // clanker: Replace the local null-dbId event with the real DB id
     let hashed = hashDate(event.deadline);
     if (data != null) {
-      setEvents((prev) => {
-        if (!prev[hashed]) return prev;
-        return { ...prev, [hashed]: prev[hashed].map((e) =>
-          e.dbId === null && e.tempId === event.tempId
-            ? { ...e, dbId: data.id, tempId: null }
-            : e
-        )};
-      });
+    setEvents((prev) => {
+      if (!prev[hashed]) return prev;
+      return { ...prev, [hashed]: prev[hashed].map((e) =>
+        e.dbId === null && e.tempId === event.tempId
+          ? { ...e, dbId: data.id, tempId: null }
+          : e
+      )};
+    });
     }
 
   } catch (error) {

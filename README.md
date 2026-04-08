@@ -10,7 +10,7 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Make presentation, add example use cases with example accounts (high prio)
 - Tasks for canvas type side bar (low prio)
 - When complete task run a check to see if data passed; use this to distribute points to accounts; add cashed out column to db; check all events before current data, if not cashed out add points and cash out; completion no points if task already passed deadline
-- Add various gacha fixes (center gacha text, make icons mystery even while rolling, )
+- make it so you can click checkboxes off even when you click the words
 - deploy
 
 # Completed Goals
@@ -43,3 +43,5 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Add gacha page and point counter and profile picture (because gacha is for pfps)
 - Weird data base adding issues; just clear events and readd them from db or something (or ask claude ot debug why recurring adds them twice initially and then when you click a new event it spawns in as halved and then doubles after updating??) 
 - Weird bug click twice to remove (prob part of above issue)
+- Add various gacha fixes (center gacha text, make icons mystery even while rolling, )
+- fix double click to remove / adding event then toggling removal causing event to disapear
