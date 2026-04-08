@@ -20,7 +20,6 @@ export async function deleteDbEvent(event, events, setEvents, user) {
       alert(error); // If there is an error, alert it on the window.
     }
   }
-  getEvents();
 }
 
 export async function setCompletion(event, completion, events, setEvents, user) {
@@ -70,14 +69,17 @@ async function saveEvent(event, setEvents) {
     if (error) throw error; // If there is an error, throw it
     // clanker: Replace the local null-dbId event with the real DB id
     let hashed = hashDate(event.deadline);
-    setEvents((prev) => {
-      if (!prev[hashed]) return prev;
-      return { ...prev, [hashed]: prev[hashed].map((e) =>
-        e.dbId === null && e.tempId === event.tempId
-          ? { ...e, dbId: data.id, tempId: null }
-          : e
-      )};
-    });
+    if (data != null) {
+      setEvents((prev) => {
+        if (!prev[hashed]) return prev;
+        return { ...prev, [hashed]: prev[hashed].map((e) =>
+          e.dbId === null && e.tempId === event.tempId
+            ? { ...e, dbId: data.id, tempId: null }
+            : e
+        )};
+      });
+    }
+
   } catch (error) {
     alert(error); // If an error is caught, alert it on screen
   }
