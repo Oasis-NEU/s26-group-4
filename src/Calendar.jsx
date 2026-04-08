@@ -20,6 +20,9 @@ export async function getEvents(events, setEvents, user) {
     if (error) throw error; // If there is an error, throw it
     if (data != null) { // If there is data fetched
       // setGroceries(data); // Set our groceries state variable to the data
+      for (const [key, value] of Object.entries(events)) {
+        events[key] = value.filter((e) => e.dbId != null);
+      }
       for (let i = 0; i < data.length; i++) {
         let obj = data[i];
         let deadline = new Date(obj.deadline);
