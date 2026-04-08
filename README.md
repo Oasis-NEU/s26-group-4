@@ -8,7 +8,6 @@ A planning app that serves to organize your tasks and motivate you to complete t
 # [Current Goals](https://docs.google.com/document/d/1t2-sQqBEpqxY3DYcKP9moxW6HfZuPBx6kjiiVyEtGU4/edit?tab=t.0)
 - Improve readme stuff (low prio; do last)
 - Make presentation, add example use cases with example accounts (high prio)
-- Add gacha page and point counter and profile picture (because gacha is for pfps)
 - Tasks for canvas type side bar (low prio)
 - When complete task run a check to see if data passed; use this to distribute points to accounts; add cashed out column to db; check all events before current data, if not cashed out add points and cash out; completion no points if task already passed deadline
 - Weird data base adding issues; just clear events and readd them from db or something (or ask claude ot debug why recurring adds them twice initially and then when you click a new event it spawns in as halved and then doubles after updating??) 
@@ -40,3 +39,5 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - For user tasks, fix overriding tasks 
 - Add task completion
 - Add task removal (mattsus branch on the job)
+- Make ordering of events in weekview sorted by id for same time
+- Add gacha page and point counter and profile picture (because gacha is for pfps)
