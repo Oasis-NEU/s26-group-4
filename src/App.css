@@ -170,6 +170,7 @@ body{
   position: relative;
   white-space: nowrap;
   font-size: 0.9cqw;
+  pointer-events: none;
 }
 
 .weekGrid th {
@@ -195,6 +196,9 @@ body{
   border: 1px solid #5b5b5b;
   width: 100%;
   height: 25%;
+  min-height: 18px;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .button {

@@ -9,7 +9,6 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Improve readme stuff (low prio; do last)
 - Make presentation, add example use cases with example accounts (high prio)
 - Tasks for canvas type side bar (low prio)
-- When complete task run a check to see if data passed; use this to distribute points to accounts; add cashed out column to db; check all events before current data, if not cashed out add points and cash out; completion no points if task already passed deadline
 - deploy
 
 # Completed Goals
@@ -45,3 +44,5 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Add various gacha fixes (center gacha text, make icons mystery even while rolling, )
 - fix double click to remove / adding event then toggling removal causing event to disapear
 - make it so you can click checkboxes off even when you click the words
+- When complete task run a check to see if data passed; use this to distribute points to accounts; add cashed out column to db; check all events before current data, if not cashed out add points and cash out; completion no points if task already passed deadline
+- Fixed edge case with events being hard to click when in between cell

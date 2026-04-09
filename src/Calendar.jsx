@@ -8,6 +8,36 @@ import { getHourAndAmFromIndex } from './Util';
 import { ProfileAvatar, loadProfile, saveProfile, NORMAL_PICS, PREMIUM_PICS } from './Profile';
 import GachaPage from './GachaPage';
 
+// Check for completed tasks past their deadline that haven't been cashed out yet.
+// Awards 25 XP per qualifying task and marks them as cashed out.
+export async function cashOutTasks(user, setXp) {
+  if (!user) return;
+  try {
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('completion', true)
+      .eq('cashedout', false)
+      .lt('deadline', now);
+    if (error) throw error;
+    if (!data || data.length === 0) return;
+
+    const ids = data.map(t => t.id);
+    const { error: updateError } = await supabase
+      .from('tasks')
+      .update({ cashedout: true })
+      .in('id', ids);
+    if (updateError) throw updateError;
+
+    const xpGained = data.length * 25;
+    setXp(prev => prev + xpGained);
+  } catch (error) {
+    console.log('cashOutTasks error:', error);
+  }
+}
+
 // Fetch events from Supabase and add to state
 export async function getEvents(events, setEvents, user) {
   // console.log("get events")
@@ -251,6 +281,8 @@ function Calendar() {
       }
       // If no profile (new user), defaults are already set by the logout branch above
       profileLoaded.current = true
+      // Cash out any completed tasks whose deadlines have passed
+      cashOutTasks(user, setXp)
     })
   }, [user])
 
@@ -260,13 +292,23 @@ function Calendar() {
     saveProfile(user.id, { xp, profilePic, owned, pullCount })
   }, [xp, profilePic, owned, pullCount])
 
-  // Fetch events once user is logged in
+  // Fetch events once user is logged in, and cash out qualifying tasks
   useEffect(() => {
-    if (user) getEvents(events, setEvents, user); // The function we just created
+    if (user) {
+      getEvents(events, setEvents, user);
+      if (profileLoaded.current) cashOutTasks(user, setXp);
+    }
   }, [user, events]) // calls when user or events is updated
   // (add events hard coded only adds one at a time, the last one in for loop)
   // (events does not accumulate, set events does not apply until after entire loop)
   // (must call get events multiple times)
+
+  // Poll every 30s to cash out tasks whose deadlines just passed
+  useEffect(() => {
+    if (!user || !profileLoaded.current) return;
+    const interval = setInterval(() => cashOutTasks(user, setXp), 30000);
+    return () => clearInterval(interval);
+  }, [user, profileLoaded.current])
 
   // Handle month grid cell click
   function monthCellClick(day, active) {
