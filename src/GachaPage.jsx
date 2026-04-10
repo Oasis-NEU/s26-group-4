@@ -302,7 +302,6 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
         <div className="gacha-xp-area">
           <ProfileAvatar profilePic={profilePic} size={40} />
           <div className="gacha-xp-bar">
-            <div className="gacha-xp-fill" style={{ width: '100%' }} />
             <div className="gacha-xp-label">{xp} XP</div>
           </div>
         </div>
