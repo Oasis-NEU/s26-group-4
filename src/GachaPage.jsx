@@ -31,6 +31,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
     setSlotAnim(null);
     setHighlighted(null);
     setStripPhase(0);
+    setXp(prev => prev - drawCost);
 
     const useFirst5Guarantee = count === DRAW_COUNT && first5Draw;
 
@@ -86,7 +87,6 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
           setHighlighted(null);
           // Go straight to strip reveal: ?? (500ms) → color (500ms) → pic
           setTimeout(() => {
-            setXp(prev => prev - drawCost);
             setOwned(prev => [...prev, drawn[0].id]);
             setPullCount(pc);
             if (useFirst5Guarantee) setFirst5Draw(false);
@@ -138,7 +138,6 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
             });
             if (idx === drawn.length - 1) {
               setTimeout(() => {
-                setXp(prev => prev - drawCost);
                 setOwned(prev => [...prev, ...drawn.map(r => r.id)]);
                 setPullCount(pc);
                 if (useFirst5Guarantee) setFirst5Draw(false);
@@ -295,8 +294,6 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
     if (emojiFloodRevealed) localStorage.setItem('emojiFloodRevealed', 'true');
   }, [emojiFloodRevealed]);
 
-  const fillPct = Math.min(xp, NORMAL_PULL_COST * DRAW_COUNT) / (NORMAL_PULL_COST * DRAW_COUNT) * 100;
-
   return (
     <div className="gacha-page">
       <div className="gacha-topbar">
@@ -305,7 +302,7 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
         <div className="gacha-xp-area">
           <ProfileAvatar profilePic={profilePic} size={40} />
           <div className="gacha-xp-bar">
-            <div className="gacha-xp-fill" style={{ width: `${fillPct}%` }} />
+            <div className="gacha-xp-fill" style={{ width: '100%' }} />
             <div className="gacha-xp-label">{xp} XP</div>
           </div>
         </div>
