@@ -39,7 +39,7 @@ A planning app that serves to organize your tasks and motivate you to complete t
 - Add task removal (mattsus branch on the job)
 - Make ordering of events in weekview sorted by id for same time
 - Add gacha page and point counter and profile picture (because gacha is for pfps)
-- Weird data base adding issues; just clear events and readd them from db or something (or ask claude ot debug why recurring adds them twice initially and then when you click a new event it spawns in as halved and then doubles after updating??) 
+- Weird data base adding issues; just clear events and readd them from db or something (debug why recurring adds them twice initially and then when you click a new event it spawns in as halved and then doubles after updating??) 
 - Weird bug click twice to remove (prob part of above issue)
 - Add various gacha fixes (center gacha text, make icons mystery even while rolling, )
 - fix double click to remove / adding event then toggling removal causing event to disapear
