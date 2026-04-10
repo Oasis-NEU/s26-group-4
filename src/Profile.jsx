@@ -128,7 +128,29 @@ export async function saveProfile(userId, { xp, profilePic, owned, pullCount }) 
 }
 
 // Roll from a given pool (NORMAL_PICS or PREMIUM_PICS)
-export function rollGacha(pool, pullCount) {
+// guaranteeMode: 'legendary' | 'epicOrLegendary' | null
+export function rollGacha(pool, pullCount, guaranteeMode = null) {
+  if (guaranteeMode === 'legendary') {
+    const legendaryPool = pool.filter(pic => pic.rarity === 'legendary');
+    if (legendaryPool.length > 0) {
+      return legendaryPool[Math.floor(Math.random() * legendaryPool.length)];
+    }
+  }
+
+  if (guaranteeMode === 'epicOrLegendary') {
+    const epicOrLegendaryPool = pool.filter(pic => pic.rarity === 'epic' || pic.rarity === 'legendary');
+    if (epicOrLegendaryPool.length > 0) {
+      const weights = getWeights(pullCount);
+      const total = epicOrLegendaryPool.reduce((sum, pic) => sum + weights[pic.rarity], 0);
+      let rand = Math.random() * total;
+      for (const pic of epicOrLegendaryPool) {
+        rand -= weights[pic.rarity];
+        if (rand <= 0) return pic;
+      }
+      return epicOrLegendaryPool[0];
+    }
+  }
+
   const weights = getWeights(pullCount);
   const total   = pool.reduce((sum, p) => sum + weights[p.rarity], 0);
   let rand = Math.random() * total;

@@ -10,7 +10,7 @@ const DRAW_COUNT = 5;
 const MYSTERY_RARITIES = new Set(['epic', 'legendary']);
 const CYCLE_WEIGHTS = { common: 2, rare: 10, epic: 30, legendary: 55 };
 
-function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, setProfilePic, pullCount, setPullCount, emojiFlood, setEmojiFlood, emojiFloodRevealed, setEmojiFloodRevealed }) {
+function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, setProfilePic, pullCount, setPullCount, first5Draw, setFirst5Draw, first5GuaranteeMode, emojiFlood, setEmojiFlood, emojiFloodRevealed, setEmojiFloodRevealed }) {
   const [rolling, setRolling]         = useState(false);
   const [results, setResults]         = useState([]);
   const [highlighted, setHighlighted] = useState(null);
@@ -32,9 +32,29 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
     setHighlighted(null);
     setStripPhase(0);
 
+    const useFirst5Guarantee = count === DRAW_COUNT && first5Draw;
+
     let pc = pullCount;
     const drawn = [];
     for (let i = 0; i < count; i++) drawn.push(rollGacha(pics, pc++));
+
+    // First pool 5x bonus guarantees at least one qualifying card in the batch, not all five.
+    if (useFirst5Guarantee) {
+      const meetsGuarantee = pic => (
+        first5GuaranteeMode === 'legendary'
+          ? pic.rarity === 'legendary'
+          : (pic.rarity === 'epic' || pic.rarity === 'legendary')
+      );
+
+      if (!drawn.some(meetsGuarantee)) {
+        const guaranteedIndex = Math.floor(Math.random() * drawn.length);
+        drawn[guaranteedIndex] = rollGacha(
+          pics,
+          pullCount + guaranteedIndex,
+          first5GuaranteeMode,
+        );
+      }
+    }
 
     const revealEmoji = ms => { if (emojiFlood && setEmojiFloodRevealed) setTimeout(() => setEmojiFloodRevealed(true), ms); };
 
@@ -69,6 +89,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
             setXp(prev => prev - drawCost);
             setOwned(prev => [...prev, drawn[0].id]);
             setPullCount(pc);
+            if (useFirst5Guarantee) setFirst5Draw(false);
             setResults(drawn);
             setRolling(false);
             setTimeout(() => setStripPhase(1), 500);
@@ -120,6 +141,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
                 setXp(prev => prev - drawCost);
                 setOwned(prev => [...prev, ...drawn.map(r => r.id)]);
                 setPullCount(pc);
+                if (useFirst5Guarantee) setFirst5Draw(false);
                 setResults(drawn);
                 setSlotAnim(null);
                 setRolling(false);
@@ -263,7 +285,7 @@ function PoolBox({ title, pics, cost, xp, setXp, owned, setOwned, profilePic, se
   );
 }
 
-export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned, setOwned, pullCount, setPullCount, onBack }) {
+export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned, setOwned, normalPullCount, setNormalPullCount, premiumPullCount, setPremiumPullCount, normal5Draw, setNormal5Draw, premium5Draw, setPremium5Draw, onBack }) {
   const [emojiFlood, setEmojiFlood]               = useState(false);
   const [emojiFloodRevealed, setEmojiFloodRevealed] = useState(
     () => localStorage.getItem('emojiFloodRevealed') === 'true'
@@ -294,7 +316,9 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
           title="Normal" pics={NORMAL_PICS} cost={NORMAL_PULL_COST}
           xp={xp} setXp={setXp} owned={owned} setOwned={setOwned}
           profilePic={profilePic} setProfilePic={setProfilePic}
-          pullCount={pullCount} setPullCount={setPullCount}
+          pullCount={normalPullCount} setPullCount={setNormalPullCount}
+          first5Draw={normal5Draw} setFirst5Draw={setNormal5Draw}
+          first5GuaranteeMode="legendary"
           emojiFlood={emojiFlood} setEmojiFlood={setEmojiFlood}
           emojiFloodRevealed={emojiFloodRevealed} setEmojiFloodRevealed={setEmojiFloodRevealed}
         />
@@ -302,7 +326,9 @@ export default function GachaPage({ xp, setXp, profilePic, setProfilePic, owned,
           title="Premium" pics={PREMIUM_PICS} cost={PREMIUM_PULL_COST}
           xp={xp} setXp={setXp} owned={owned} setOwned={setOwned}
           profilePic={profilePic} setProfilePic={setProfilePic}
-          pullCount={pullCount} setPullCount={setPullCount}
+          pullCount={premiumPullCount} setPullCount={setPremiumPullCount}
+          first5Draw={premium5Draw} setFirst5Draw={setPremium5Draw}
+          first5GuaranteeMode="epicOrLegendary"
           emojiFlood={emojiFlood}
         />
       </div>

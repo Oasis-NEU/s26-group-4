@@ -254,8 +254,12 @@ function Calendar() {
   const [xp, setXp] = useState(1500)
   const [profilePic, setProfilePic] = useState('plant')
   const [owned, setOwned] = useState(['blossom', 'plant'])
-  const [pullCount, setPullCount] = useState(0)
+  const [normalPullCount, setNormalPullCount] = useState(0)
+  const [premiumPullCount, setPremiumPullCount] = useState(0)
+  const [normal5Draw, setNormal5Draw] = useState(true)
+  const [premium5Draw, setPremium5Draw] = useState(true)
   const profileLoaded = useRef(false)
+  const totalPullCount = normalPullCount + premiumPullCount
 
   // On mount, get user from Supabase
   useEffect(() => {
@@ -269,15 +273,22 @@ function Calendar() {
       setXp(1500);
       setProfilePic('plant');
       setOwned(['blossom', 'plant']);
-      setPullCount(0);
+      setNormalPullCount(0);
+      setPremiumPullCount(0);
+      setNormal5Draw(true);
+      setPremium5Draw(true);
       return;
     }
+
     loadProfile(user.id).then(p => {
       if (p) {
         setXp(p.xp)
         setProfilePic(p.profilePic)
         setOwned(p.owned)
-        setPullCount(p.pullCount)
+        const savedNormal = Number(localStorage.getItem(`normalPullCount:${user.id}`));
+        const savedPremium = Number(localStorage.getItem(`premiumPullCount:${user.id}`));
+        setNormalPullCount(Number.isFinite(savedNormal) ? savedNormal : 0);
+        setPremiumPullCount(Number.isFinite(savedPremium) ? savedPremium : 0);
       }
       // If no profile (new user), defaults are already set by the logout branch above
       profileLoaded.current = true
@@ -289,8 +300,10 @@ function Calendar() {
   // Save profile whenever it changes
   useEffect(() => {
     if (!user || !profileLoaded.current) return
-    saveProfile(user.id, { xp, profilePic, owned, pullCount })
-  }, [xp, profilePic, owned, pullCount])
+    saveProfile(user.id, { xp, profilePic, owned, pullCount: totalPullCount })
+    localStorage.setItem(`normalPullCount:${user.id}`, String(normalPullCount));
+    localStorage.setItem(`premiumPullCount:${user.id}`, String(premiumPullCount));
+  }, [user, xp, profilePic, owned, normalPullCount, premiumPullCount, totalPullCount])
 
   // Fetch events once user is logged in, and cash out qualifying tasks
   useEffect(() => {
@@ -335,7 +348,10 @@ function Calendar() {
         xp={xp} setXp={setXp}
         profilePic={profilePic} setProfilePic={setProfilePic}
         owned={owned} setOwned={setOwned}
-        pullCount={pullCount} setPullCount={setPullCount}
+        normalPullCount={normalPullCount} setNormalPullCount={setNormalPullCount}
+        premiumPullCount={premiumPullCount} setPremiumPullCount={setPremiumPullCount}
+        normal5Draw={normal5Draw} setNormal5Draw={setNormal5Draw}
+        premium5Draw={premium5Draw} setPremium5Draw={setPremium5Draw}
         onBack={() => setView(View.MONTH)}
       />
     )
@@ -345,7 +361,7 @@ function Calendar() {
     <div className="calendar" style={{ position: 'relative' }}>
       <AuthDropdown user={user} setUser={setUser} setEvents={setEvents}
         profilePic={profilePic} setView={setView} xp={xp}
-        owned={owned} pullCount={pullCount}
+        owned={owned} pullCount={totalPullCount}
       />
       {view === View.MONTH
         ? <MonthGrid date={date} setDate={setDate} handleClick={monthCellClick} events={events}/>
